@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "AI Typography Cleaner",
+  "version": "0.1.0",
+  "description": "Заменяет типографские спецсимволы ИИ-текста на обычные клавиатурные аналоги при копировании.",
+
+  "permissions": ["clipboardWrite", "contextMenus", "storage", "activeTab", "scripting"],
+
+  "host_permissions": [
+    "*://chatgpt.com/*",
+    "*://claude.ai/*",
+    "*://gemini.google.com/*"
+  ],
+  "optional_host_permissions": ["*://*/*"],
+
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["*://chatgpt.com/*", "*://claude.ai/*", "*://gemini.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "AI Typography Cleaner"
+  },
+
+  "options_page": "options/options.html",
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "ai-typography-cleaner@example.com",
+      "strict_min_version": "109.0"
+    }
+  }
+}
