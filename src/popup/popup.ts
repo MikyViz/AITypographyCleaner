@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import { normalize } from '../core/normalize';
 import { getSettings } from '../shared/settings';
 
@@ -10,7 +11,7 @@ const openOptions = document.getElementById('open-options') as HTMLAnchorElement
 
 openOptions.addEventListener('click', (event) => {
   event.preventDefault();
-  chrome.runtime.openOptionsPage();
+  void browser.runtime.openOptionsPage();
 });
 
 cleanButton.addEventListener('click', async () => {

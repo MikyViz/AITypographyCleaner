@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import type { Options } from '../core/normalize';
 import {
   DEFAULT_WHITELIST,
@@ -97,7 +98,7 @@ addDomainButton.addEventListener('click', async () => {
     return;
   }
 
-  const granted = await chrome.permissions.request({ origins: [domainToOriginPattern(domain)] });
+  const granted = await browser.permissions.request({ origins: [domainToOriginPattern(domain)] });
   if (!granted) {
     showStatus('Доступ не предоставлен', true);
     return;

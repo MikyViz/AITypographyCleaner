@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import { normalize, type Options } from './core/normalize';
 import type { ContentMessage } from './shared/messages';
 import { getSettings, onSettingsChanged } from './shared/settings';
@@ -24,7 +25,7 @@ function init(): void {
   });
 
   document.addEventListener('copy', handleCopy, true);
-  chrome.runtime.onMessage.addListener(handleMessage);
+  browser.runtime.onMessage.addListener(handleMessage);
 
   function handleCopy(event: ClipboardEvent): void {
     if (!currentOptions || !event.clipboardData) return;
@@ -39,21 +40,15 @@ function init(): void {
     event.preventDefault();
   }
 
-  function handleMessage(
-    message: ContentMessage,
-    _sender: chrome.runtime.MessageSender,
-    sendResponse: (response?: unknown) => void,
-  ): boolean | void {
-    if (message.type === 'ping') {
-      sendResponse(true);
+  async function handleMessage(message: unknown): Promise<unknown> {
+    const msg = message as ContentMessage;
+    if (msg.type === 'ping') return true;
+    if (msg.type === 'clean-selection') {
+      await cleanSelectionToClipboard();
       return;
     }
-    if (message.type === 'clean-selection') {
-      void cleanSelectionToClipboard();
-      return;
-    }
-    if (message.type === 'paste-cleaned') {
-      void pasteCleanedFromClipboard();
+    if (msg.type === 'paste-cleaned') {
+      await pasteCleanedFromClipboard();
     }
   }
 

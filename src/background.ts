@@ -1,3 +1,4 @@
+import browser, { type Scripting } from 'webextension-polyfill';
 import type { ContentMessage } from './shared/messages';
 import { DEFAULT_WHITELIST, domainToOriginPattern, getSettings, onSettingsChanged } from './shared/settings';
 
@@ -7,13 +8,13 @@ const DYNAMIC_SCRIPT_ID = 'ai-typography-cleaner-dynamic';
 const CLEAN_SELECTION_MENU_ID = 'ai-typography-cleaner-clean-selection';
 const PASTE_CLEANED_MENU_ID = 'ai-typography-cleaner-paste-cleaned';
 
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({
+browser.runtime.onInstalled.addListener(() => {
+  browser.contextMenus.create({
     id: CLEAN_SELECTION_MENU_ID,
     title: 'Очистить выделенное',
     contexts: ['selection'],
   });
-  chrome.contextMenus.create({
+  browser.contextMenus.create({
     id: PASTE_CLEANED_MENU_ID,
     title: 'Вставить очищенным',
     contexts: ['editable'],
@@ -21,15 +22,15 @@ chrome.runtime.onInstalled.addListener(() => {
   void syncDynamicContentScripts();
 });
 
-chrome.runtime.onStartup.addListener(() => {
+browser.runtime.onStartup.addListener(() => {
   void syncDynamicContentScripts();
 });
 
 onSettingsChanged(() => void syncDynamicContentScripts());
-chrome.permissions.onAdded.addListener(() => void syncDynamicContentScripts());
-chrome.permissions.onRemoved.addListener(() => void syncDynamicContentScripts());
+browser.permissions.onAdded.addListener(() => void syncDynamicContentScripts());
+browser.permissions.onRemoved.addListener(() => void syncDynamicContentScripts());
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+browser.contextMenus.onClicked.addListener((info, tab) => {
   if (!tab?.id) return;
   if (info.menuItemId === CLEAN_SELECTION_MENU_ID) {
     void sendToTab(tab.id, { type: 'clean-selection' });
@@ -41,14 +42,14 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 async function sendToTab(tabId: number, message: ContentMessage): Promise<void> {
   if (!(await ping(tabId))) {
     // activeTab даёт разовое разрешение на инъекцию даже вне whitelist-доменов.
-    await chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] });
+    await browser.scripting.executeScript({ target: { tabId }, files: ['content.js'] });
   }
-  await chrome.tabs.sendMessage(tabId, message);
+  await browser.tabs.sendMessage(tabId, message);
 }
 
 async function ping(tabId: number): Promise<boolean> {
   try {
-    await chrome.tabs.sendMessage(tabId, { type: 'ping' } satisfies ContentMessage);
+    await browser.tabs.sendMessage(tabId, { type: 'ping' } satisfies ContentMessage);
     return true;
   } catch {
     return false;
@@ -60,22 +61,22 @@ async function syncDynamicContentScripts(): Promise<void> {
   const { whitelist } = await getSettings();
   const customDomains = whitelist.filter((domain) => !STATIC_DOMAINS.has(domain));
 
-  const granted = await chrome.permissions.getAll();
+  const granted = await browser.permissions.getAll();
   const grantedOrigins = new Set(granted.origins ?? []);
   const matches = customDomains
     .map(domainToOriginPattern)
     .filter((pattern) => grantedOrigins.has(pattern));
 
-  const existing = await chrome.scripting.getRegisteredContentScripts({ ids: [DYNAMIC_SCRIPT_ID] });
+  const existing = await browser.scripting.getRegisteredContentScripts({ ids: [DYNAMIC_SCRIPT_ID] });
 
   if (matches.length === 0) {
     if (existing.length > 0) {
-      await chrome.scripting.unregisterContentScripts({ ids: [DYNAMIC_SCRIPT_ID] });
+      await browser.scripting.unregisterContentScripts({ ids: [DYNAMIC_SCRIPT_ID] });
     }
     return;
   }
 
-  const script: chrome.scripting.RegisteredContentScript = {
+  const script: Scripting.RegisteredContentScript = {
     id: DYNAMIC_SCRIPT_ID,
     matches,
     js: ['content.js'],
@@ -83,8 +84,8 @@ async function syncDynamicContentScripts(): Promise<void> {
   };
 
   if (existing.length > 0) {
-    await chrome.scripting.updateContentScripts([script]);
+    await browser.scripting.updateContentScripts([script]);
   } else {
-    await chrome.scripting.registerContentScripts([script]);
+    await browser.scripting.registerContentScripts([script]);
   }
 }

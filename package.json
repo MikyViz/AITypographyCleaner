@@ -5,16 +5,22 @@
   "type": "module",
   "description": "Browser extension that normalizes AI-generated typographic characters back to plain keyboard equivalents.",
   "scripts": {
-    "build": "node scripts/build.mjs",
-    "watch": "node scripts/build.mjs --watch",
+    "build": "node scripts/build.mjs --target=chrome",
+    "build:firefox": "node scripts/build.mjs --target=firefox",
+    "build:all": "npm run build && npm run build:firefox",
+    "watch": "node scripts/build.mjs --watch --target=chrome",
+    "watch:firefox": "node scripts/build.mjs --watch --target=firefox",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.280",
+    "@types/webextension-polyfill": "^0.12.6",
     "esbuild": "^0.23.1",
     "typescript": "^5.6.2",
     "vitest": "^2.1.1"
+  },
+  "dependencies": {
+    "webextension-polyfill": "^0.12.0"
   }
 }

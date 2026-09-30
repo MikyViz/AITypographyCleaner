@@ -1,0 +1,48 @@
+body {
+  margin: 0;
+  width: 360px;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  color: #1a1a1a;
+}
+
+main {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+h1 {
+  font-size: 15px;
+  margin: 0 0 4px;
+}
+
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  flex: 1;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.status {
+  min-height: 16px;
+  color: #2e7d32;
+  margin: 0;
+}
+
+a {
+  align-self: flex-start;
+  font-size: 12px;
+}

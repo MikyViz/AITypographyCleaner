@@ -7,30 +7,39 @@
 ## Структура проекта
 
 ```
-manifest.json          — манифест MV3
+manifest.json          — манифест MV3 (шаблон; background переписывается сборщиком под таргет)
 src/core/rules.ts       — чистые regex-примитивы для каждой группы правил
 src/core/normalize.ts   — normalize(text, opts): чистая функция без побочных эффектов
-src/shared/settings.ts  — чтение/запись chrome.storage.sync, whitelist-хелперы
+src/shared/settings.ts  — чтение/запись browser.storage.sync, whitelist-хелперы
 src/shared/messages.ts  — типы сообщений content ⇄ background
 src/content.ts          — перехват copy/paste на whitelist-сайтах + обработчик контекстного меню
-src/background.ts       — service worker: контекстное меню, permissions, регистрация content script
+src/background.ts       — фоновый скрипт: контекстное меню, permissions, регистрация content script
 src/popup/              — popup с textarea "вставил → очистил → скопировал"
 src/options/            — страница настроек (чекбоксы правил + whitelist доменов)
 tests/normalize.test.ts — vitest, минимум 1 кейс на каждое правило
-scripts/build.mjs       — esbuild-бандлер
+scripts/build.mjs       — esbuild-бандлер, собирает под --target=chrome|firefox
 ```
+
+Вся работа с WebExtension API идёт через [`webextension-polyfill`](https://github.com/mozilla/webextension-polyfill)
+(`browser.*` с промисами) — это снимает главный источник несовместимости с Chrome (`chrome.*`
+в Firefox не всегда возвращает Promise без колбэка).
 
 ## Сборка
 
 ```bash
 npm install
-npm run build      # собирает dist/ (production-бандл)
-npm run watch       # то же самое, но пересобирает при изменениях
-npm test            # vitest — тесты ядра normalize()
-npm run typecheck   # tsc --noEmit
+npm run build          # dist/ — production-бандл под Chrome/Chromium
+npm run build:firefox  # dist-firefox/ — production-бандл под Firefox
+npm run build:all      # оба сразу
+npm run watch          # пересборка dist/ при изменениях (Chrome)
+npm run watch:firefox  # пересборка dist-firefox/ при изменениях
+npm test               # vitest — тесты ядра normalize()
+npm run typecheck      # tsc --noEmit
 ```
 
-Результат сборки — папка `dist/`, готовая к загрузке как unpacked-расширение.
+Единственное отличие между таргетами — ключ `background` в манифесте
+(`service_worker` для Chrome MV3 vs `scripts` для Firefox, который до сих пор не запускает
+фон как настоящий Service Worker). Весь остальной код и permissions идентичны.
 
 ## Загрузка в браузер
 
@@ -41,18 +50,18 @@ npm run typecheck   # tsc --noEmit
 4. "Загрузить распакованное расширение" → выбрать папку `dist/`.
 
 ### Firefox
-1. `npm run build`.
+1. `npm run build:firefox`.
 2. Открыть `about:debugging#/runtime/this-firefox`.
-3. "Load Temporary Add-on…" → выбрать `dist/manifest.json`.
+3. "Load Temporary Add-on…" → выбрать `dist-firefox/manifest.json`.
 
 > Временная установка в Firefox живёт до перезапуска браузера. `browser_specific_settings.gecko.id`
 > в манифесте уже задан, поэтому `storage.sync` работает стабильно между перезагрузками
 > (без него Firefox генерирует новый ID аддона на каждую загрузку и storage.sync ломается).
 
-> Примечание про MV3 в Firefox: `background.service_worker` поддерживается начиная с
-> Firefox 109+. Если у вас более старая/ESR-сборка без этой поддержки, замените в
-> `manifest.json` ключ `"background": { "service_worker": "background.js" }` на
-> `"background": { "scripts": ["background.js"] }` — весь остальной код совместим с обоими вариантами.
+> Собранные бандлы не запускались вживую в Firefox в рамках этой сессии (нет доступа к браузеру) —
+> код и манифест написаны и типизированы под официально задокументированное поведение Firefox
+> (WebExtensions `scripting`, `permissions`, `contextMenus`, `storage.sync`, `menus`), но перед
+> публикацией стоит один раз вручную проверить через `about:debugging`.
 
 ## Как это работает
 
@@ -71,9 +80,9 @@ npm run typecheck   # tsc --noEmit
   внедряется точечно через `activeTab`, разрешение не расширяется на весь интернет.
 - **Popup.** Textarea → "Очистить" → `normalize()` с текущими настройками → "Копировать".
 - **Options.** Чекбоксы включают/выключают каждую группу правил, whitelist редактируется
-  (добавление домена запрашивает `chrome.permissions.request` только на этот конкретный домен
+  (добавление домена запрашивает `browser.permissions.request` только на этот конкретный домен
   через `optional_host_permissions`, без запроса доступа ко всем сайтам сразу). Настройки хранятся
-  в `chrome.storage.sync`.
+  в `browser.storage.sync`.
 
 ## Правила замены
 

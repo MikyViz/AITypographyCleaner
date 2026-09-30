@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import { defaultOptions, type Options } from '../core/normalize';
 
 export interface StoredSettings {
@@ -13,7 +14,9 @@ export const defaultSettings: StoredSettings = {
 };
 
 export async function getSettings(): Promise<StoredSettings> {
-  const stored = (await chrome.storage.sync.get(defaultSettings)) as StoredSettings;
+  const stored = (await browser.storage.sync.get(
+    defaultSettings as unknown as Record<string, unknown>,
+  )) as unknown as StoredSettings;
   return {
     options: { ...defaultOptions, ...stored.options },
     whitelist: stored.whitelist ?? DEFAULT_WHITELIST,
@@ -21,11 +24,11 @@ export async function getSettings(): Promise<StoredSettings> {
 }
 
 export async function saveSettings(settings: StoredSettings): Promise<void> {
-  await chrome.storage.sync.set(settings);
+  await browser.storage.sync.set(settings as unknown as Record<string, unknown>);
 }
 
 export function onSettingsChanged(callback: (settings: StoredSettings) => void): void {
-  chrome.storage.onChanged.addListener((_changes, area) => {
+  browser.storage.onChanged.addListener((_changes, area) => {
     if (area !== 'sync') return;
     void getSettings().then(callback);
   });

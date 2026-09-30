@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <title>AI Typography Cleaner</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main>
+      <h1>AI Typography Cleaner</h1>
+
+      <label for="input">Вставьте текст</label>
+      <textarea id="input" rows="6" placeholder="Вставьте текст сюда..."></textarea>
+
+      <div class="actions">
+        <button id="clean">Очистить</button>
+        <button id="copy" disabled>Копировать</button>
+      </div>
+
+      <label for="output">Результат</label>
+      <textarea id="output" rows="6" readonly></textarea>
+
+      <p id="status" class="status" role="status"></p>
+      <a id="open-options" href="#">Настройки</a>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
