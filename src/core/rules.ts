@@ -65,6 +65,19 @@ export function replaceMisc(text: string): string {
     .replace(/\u2033/g, '"'); // двойной прайм ″
 }
 
+/**
+ * Эмодзи и их расширенные последовательности: базовый пиктограф (Extended_Pictographic,
+ * покрывает эмодзи-блоки и часть символов вроде ©/®/™/★) с необязательными модификаторами
+ * тона кожи, variation selector-16 и ZWJ-цепочками (составные эмодзи вроде 👨‍👩‍👧),
+ * плюс флаги (пары regional indicator) и keycap-последовательности (digit/#/* + ⃣).
+ */
+const EMOJI =
+  /\p{Extended_Pictographic}(?:[\u{1F3FB}-\u{1F3FF}]|\uFE0F|\u200D\p{Extended_Pictographic})*|[\u{1F1E6}-\u{1F1FF}]{2}|[0-9#*]\uFE0F?\u20E3/gu;
+
+export function removeEmojis(text: string): string {
+  return text.replace(EMOJI, '');
+}
+
 const LINE_SPLIT = /(\r\n|\n)/;
 
 /**

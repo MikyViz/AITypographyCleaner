@@ -1,28 +1,89 @@
+:root {
+  color-scheme: light dark;
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #666666;
+  --border: #d8dadf;
+  --field-bg: #f7f8fa;
+  --accent: #3b6ef6;
+  --accent-fg: #ffffff;
+  --accent-hover: #2f58cf;
+  --secondary-bg: #eef1f6;
+  --secondary-fg: #1a1a1a;
+  --secondary-hover: #e1e5ec;
+  --success: #1e8e3e;
+  --radius: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1e1f22;
+    --fg: #f0f0f2;
+    --muted: #a0a3ab;
+    --border: #3a3b40;
+    --field-bg: #2a2b2f;
+    --accent: #5b82ff;
+    --accent-fg: #ffffff;
+    --accent-hover: #6f90ff;
+    --secondary-bg: #2d2f34;
+    --secondary-fg: #f0f0f2;
+    --secondary-hover: #383a40;
+    --success: #5fcb81;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   width: 360px;
-  font-family: system-ui, sans-serif;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   font-size: 13px;
-  color: #1a1a1a;
+  color: var(--fg);
+  background: var(--bg);
 }
 
 main {
-  padding: 12px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 h1 {
   font-size: 15px;
+  font-weight: 600;
   margin: 0 0 4px;
+}
+
+label {
+  font-size: 12px;
+  color: var(--muted);
 }
 
 textarea {
   width: 100%;
-  box-sizing: border-box;
   font-family: inherit;
+  font-size: 13px;
+  color: var(--fg);
+  background: var(--field-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
   resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+textarea[readonly] {
+  color: var(--muted);
 }
 
 .actions {
@@ -32,17 +93,56 @@ textarea {
 
 button {
   flex: 1;
-  padding: 6px 8px;
+  padding: 7px 10px;
+  font: inherit;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius);
   cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.05s ease;
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+button.primary {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+button.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+button.secondary {
+  background: var(--secondary-bg);
+  color: var(--secondary-fg);
+}
+
+button.secondary:hover:not(:disabled) {
+  background: var(--secondary-hover);
 }
 
 .status {
   min-height: 16px;
-  color: #2e7d32;
+  color: var(--success);
   margin: 0;
+  font-size: 12px;
 }
 
 a {
   align-self: flex-start;
   font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }

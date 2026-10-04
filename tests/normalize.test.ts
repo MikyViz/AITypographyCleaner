@@ -118,6 +118,37 @@ describe('misc', () => {
   });
 });
 
+describe('emojis', () => {
+  it('is disabled by default', () => {
+    expect(normalize('Hello 😀 world', opts())).toBe('Hello 😀 world');
+  });
+
+  it('removes simple emoji when enabled', () => {
+    expect(normalize('Hello 😀 world', opts({ emojis: true }))).toBe('Hello world');
+  });
+
+  it('removes emoji with skin tone modifiers', () => {
+    expect(normalize('Thumbs up 👍🏽 nice', opts({ emojis: true }))).toBe('Thumbs up nice');
+  });
+
+  it('removes ZWJ emoji sequences (family, professions) as a whole', () => {
+    const family = '\u{1F468}\u200D\u{1F469}\u200D\u{1F467}\u200D\u{1F466}';
+    expect(normalize(`Family ${family} photo`, opts({ emojis: true }))).toBe('Family photo');
+  });
+
+  it('removes flag sequences (regional indicator pairs)', () => {
+    expect(normalize('Flag \u{1F1FA}\u{1F1F8} day', opts({ emojis: true }))).toBe('Flag day');
+  });
+
+  it('removes keycap sequences', () => {
+    expect(normalize('Count 3\uFE0F\u20E3 two', opts({ emojis: true }))).toBe('Count two');
+  });
+
+  it('can be disabled explicitly', () => {
+    expect(normalize('Hello 😀', opts({ emojis: false }))).toBe('Hello 😀');
+  });
+});
+
 describe('collapseSpaces', () => {
   it('collapses doubled spaces created by replacements', () => {
     expect(normalize('foo\u00A0 bar', opts())).toBe('foo bar');

@@ -1,6 +1,7 @@
 import {
   type DashMode,
   collapseSpaces,
+  removeEmojis,
   removeInvisibles,
   replaceDashes,
   replaceEllipsis,
@@ -18,6 +19,7 @@ export interface Options {
   spaces: boolean;
   invisibles: boolean;
   misc: boolean;
+  emojis: boolean;
   collapseSpaces: boolean;
 }
 
@@ -29,6 +31,7 @@ export const defaultOptions: Options = {
   spaces: true,
   invisibles: true,
   misc: true,
+  emojis: false,
   collapseSpaces: true,
 };
 
@@ -50,6 +53,7 @@ export function normalize(text: string, opts: Options = defaultOptions): string 
       if (opts.spaces) value = replaceSpecialSpaces(value);
       if (opts.invisibles) value = removeInvisibles(value);
       if (opts.misc) value = replaceMisc(value);
+      if (opts.emojis) value = removeEmojis(value);
       if (opts.collapseSpaces) value = collapseSpaces(value);
       return value;
     })

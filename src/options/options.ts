@@ -15,6 +15,7 @@ const checkboxIds = [
   'spaces',
   'invisibles',
   'misc',
+  'emojis',
   'collapseSpaces',
 ] as const;
 
@@ -40,6 +41,7 @@ function readOptionsFromForm(base: Options): Options {
     spaces: checkbox('spaces').checked,
     invisibles: checkbox('invisibles').checked,
     misc: checkbox('misc').checked,
+    emojis: checkbox('emojis').checked,
     collapseSpaces: checkbox('collapseSpaces').checked,
   };
 }

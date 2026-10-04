@@ -1022,6 +1022,9 @@
   // src/shared/settings.ts
   var import_webextension_polyfill = __toESM(require_browser_polyfill(), 1);
 
+  // src/core/rules.ts
+  var EMOJI = new RegExp("\\p{Extended_Pictographic}(?:[\\u{1F3FB}-\\u{1F3FF}]|\\uFE0F|\\u200D\\p{Extended_Pictographic})*|[\\u{1F1E6}-\\u{1F1FF}]{2}|[0-9#*]\\uFE0F?\\u20E3", "gu");
+
   // src/core/normalize.ts
   var defaultOptions = {
     quotes: true,
@@ -1031,6 +1034,7 @@
     spaces: true,
     invisibles: true,
     misc: true,
+    emojis: false,
     collapseSpaces: true
   };
 

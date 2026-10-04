@@ -1049,6 +1049,10 @@
   function replaceMisc(text) {
     return text.replace(/[\u2212\u2011]/g, "-").replace(/\u2022/g, "-").replace(/\u2192/g, "->").replace(/\u2190/g, "<-").replace(MULTIPLICATION_TIGHT, "x").replace(/\u2032/g, "'").replace(/\u2033/g, '"');
   }
+  var EMOJI = new RegExp("\\p{Extended_Pictographic}(?:[\\u{1F3FB}-\\u{1F3FF}]|\\uFE0F|\\u200D\\p{Extended_Pictographic})*|[\\u{1F1E6}-\\u{1F1FF}]{2}|[0-9#*]\\uFE0F?\\u20E3", "gu");
+  function removeEmojis(text) {
+    return text.replace(EMOJI, "");
+  }
   var LINE_SPLIT = /(\r\n|\n)/;
   function collapseSpaces(text) {
     return text.split(LINE_SPLIT).map((part) => {
@@ -1086,6 +1090,7 @@
     spaces: true,
     invisibles: true,
     misc: true,
+    emojis: false,
     collapseSpaces: true
   };
   function normalize(text, opts = defaultOptions) {
@@ -1099,6 +1104,7 @@
       if (opts.spaces) value = replaceSpecialSpaces(value);
       if (opts.invisibles) value = removeInvisibles(value);
       if (opts.misc) value = replaceMisc(value);
+      if (opts.emojis) value = removeEmojis(value);
       if (opts.collapseSpaces) value = collapseSpaces(value);
       return value;
     }).join("");
