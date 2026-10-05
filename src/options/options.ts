@@ -7,6 +7,7 @@ import {
   saveSettings,
   sanitizeDomain,
 } from '../shared/settings';
+import { applyTheme, DEFAULT_THEME, type Theme } from '../shared/theme';
 
 const checkboxIds = [
   'quotes',
@@ -20,12 +21,14 @@ const checkboxIds = [
 ] as const;
 
 const dashModeSelect = document.getElementById('dashMode') as HTMLSelectElement;
+const themeSelect = document.getElementById('theme') as HTMLSelectElement;
 const whitelistEl = document.getElementById('whitelist') as HTMLUListElement;
 const newDomainInput = document.getElementById('new-domain') as HTMLInputElement;
 const addDomainButton = document.getElementById('add-domain') as HTMLButtonElement;
 const statusEl = document.getElementById('status') as HTMLParagraphElement;
 
 let whitelist: string[] = [...DEFAULT_WHITELIST];
+let theme: Theme = DEFAULT_THEME;
 
 function checkbox(id: (typeof checkboxIds)[number]): HTMLInputElement {
   return document.getElementById(id) as HTMLInputElement;
@@ -56,6 +59,11 @@ async function load(): Promise<void> {
   dashModeSelect.value = settings.options.dashMode;
   dashModeSelect.addEventListener('change', onOptionsChange);
 
+  theme = settings.theme;
+  themeSelect.value = theme;
+  applyTheme(theme);
+  themeSelect.addEventListener('change', onThemeChange);
+
   whitelist = [...settings.whitelist];
   renderWhitelist();
 }
@@ -63,7 +71,15 @@ async function load(): Promise<void> {
 async function onOptionsChange(): Promise<void> {
   const settings = await getSettings();
   const options = readOptionsFromForm(settings.options);
-  await saveSettings({ options, whitelist });
+  await saveSettings({ options, whitelist, theme });
+  showStatus('Сохранено');
+}
+
+async function onThemeChange(): Promise<void> {
+  theme = themeSelect.value as Theme;
+  applyTheme(theme);
+  const settings = await getSettings();
+  await saveSettings({ options: settings.options, whitelist, theme });
   showStatus('Сохранено');
 }
 
@@ -84,7 +100,7 @@ function renderWhitelist(): void {
 async function removeDomain(domain: string): Promise<void> {
   whitelist = whitelist.filter((d) => d !== domain);
   const settings = await getSettings();
-  await saveSettings({ options: settings.options, whitelist });
+  await saveSettings({ options: settings.options, whitelist, theme });
   renderWhitelist();
   showStatus('Сохранено');
 }
@@ -108,7 +124,7 @@ addDomainButton.addEventListener('click', async () => {
 
   whitelist = [...whitelist, domain];
   const settings = await getSettings();
-  await saveSettings({ options: settings.options, whitelist });
+  await saveSettings({ options: settings.options, whitelist, theme });
   newDomainInput.value = '';
   renderWhitelist();
   showStatus('Домен добавлен');
@@ -123,3 +139,4 @@ function showStatus(text: string, isError = false): void {
 }
 
 void load();
+

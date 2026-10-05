@@ -1038,11 +1038,22 @@
     collapseSpaces: true
   };
 
+  // src/shared/theme.ts
+  var DEFAULT_THEME = "system";
+  function applyTheme(theme2) {
+    if (theme2 === "system") {
+      document.documentElement.removeAttribute("data-theme");
+    } else {
+      document.documentElement.setAttribute("data-theme", theme2);
+    }
+  }
+
   // src/shared/settings.ts
   var DEFAULT_WHITELIST = ["chatgpt.com", "claude.ai", "gemini.google.com"];
   var defaultSettings = {
     options: defaultOptions,
-    whitelist: DEFAULT_WHITELIST
+    whitelist: DEFAULT_WHITELIST,
+    theme: DEFAULT_THEME
   };
   async function getSettings() {
     const stored = await import_webextension_polyfill.default.storage.sync.get(
@@ -1050,7 +1061,8 @@
     );
     return {
       options: { ...defaultOptions, ...stored.options },
-      whitelist: stored.whitelist ?? DEFAULT_WHITELIST
+      whitelist: stored.whitelist ?? DEFAULT_WHITELIST,
+      theme: stored.theme ?? DEFAULT_THEME
     };
   }
   async function saveSettings(settings) {
@@ -1076,11 +1088,13 @@
     "collapseSpaces"
   ];
   var dashModeSelect = document.getElementById("dashMode");
+  var themeSelect = document.getElementById("theme");
   var whitelistEl = document.getElementById("whitelist");
   var newDomainInput = document.getElementById("new-domain");
   var addDomainButton = document.getElementById("add-domain");
   var statusEl = document.getElementById("status");
   var whitelist = [...DEFAULT_WHITELIST];
+  var theme = DEFAULT_THEME;
   function checkbox(id) {
     return document.getElementById(id);
   }
@@ -1106,13 +1120,24 @@
     }
     dashModeSelect.value = settings.options.dashMode;
     dashModeSelect.addEventListener("change", onOptionsChange);
+    theme = settings.theme;
+    themeSelect.value = theme;
+    applyTheme(theme);
+    themeSelect.addEventListener("change", onThemeChange);
     whitelist = [...settings.whitelist];
     renderWhitelist();
   }
   async function onOptionsChange() {
     const settings = await getSettings();
     const options = readOptionsFromForm(settings.options);
-    await saveSettings({ options, whitelist });
+    await saveSettings({ options, whitelist, theme });
+    showStatus("\u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043E");
+  }
+  async function onThemeChange() {
+    theme = themeSelect.value;
+    applyTheme(theme);
+    const settings = await getSettings();
+    await saveSettings({ options: settings.options, whitelist, theme });
     showStatus("\u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043E");
   }
   function renderWhitelist() {
@@ -1131,7 +1156,7 @@
   async function removeDomain(domain) {
     whitelist = whitelist.filter((d) => d !== domain);
     const settings = await getSettings();
-    await saveSettings({ options: settings.options, whitelist });
+    await saveSettings({ options: settings.options, whitelist, theme });
     renderWhitelist();
     showStatus("\u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043E");
   }
@@ -1152,7 +1177,7 @@
     }
     whitelist = [...whitelist, domain];
     const settings = await getSettings();
-    await saveSettings({ options: settings.options, whitelist });
+    await saveSettings({ options: settings.options, whitelist, theme });
     newDomainInput.value = "";
     renderWhitelist();
     showStatus("\u0414\u043E\u043C\u0435\u043D \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D");

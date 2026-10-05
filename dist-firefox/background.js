@@ -1038,11 +1038,15 @@
     collapseSpaces: true
   };
 
+  // src/shared/theme.ts
+  var DEFAULT_THEME = "system";
+
   // src/shared/settings.ts
   var DEFAULT_WHITELIST = ["chatgpt.com", "claude.ai", "gemini.google.com"];
   var defaultSettings = {
     options: defaultOptions,
-    whitelist: DEFAULT_WHITELIST
+    whitelist: DEFAULT_WHITELIST,
+    theme: DEFAULT_THEME
   };
   async function getSettings() {
     const stored = await import_webextension_polyfill.default.storage.sync.get(
@@ -1050,7 +1054,8 @@
     );
     return {
       options: { ...defaultOptions, ...stored.options },
-      whitelist: stored.whitelist ?? DEFAULT_WHITELIST
+      whitelist: stored.whitelist ?? DEFAULT_WHITELIST,
+      theme: stored.theme ?? DEFAULT_THEME
     };
   }
   function onSettingsChanged(callback) {

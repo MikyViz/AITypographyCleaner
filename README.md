@@ -11,6 +11,7 @@ manifest.json          — манифест MV3 (шаблон; background пер
 src/core/rules.ts       — чистые regex-примитивы для каждой группы правил
 src/core/normalize.ts   — normalize(text, opts): чистая функция без побочных эффектов
 src/shared/settings.ts  — чтение/запись browser.storage.sync, whitelist-хелперы
+src/shared/theme.ts     — тип Theme и applyTheme() — форсирует data-theme на <html> для Light/Dark
 src/shared/messages.ts  — типы сообщений content ⇄ background
 src/content.ts          — перехват copy/paste на whitelist-сайтах + обработчик контекстного меню
 src/background.ts       — фоновый скрипт: контекстное меню, permissions, регистрация content script
@@ -83,6 +84,11 @@ npm run typecheck      # tsc --noEmit
   (добавление домена запрашивает `browser.permissions.request` только на этот конкретный домен
   через `optional_host_permissions`, без запроса доступа ко всем сайтам сразу). Настройки хранятся
   в `browser.storage.sync`.
+- **Тема оформления.** Селектор "Системная / Светлая / Тёмная" в настройках ([src/shared/theme.ts](src/shared/theme.ts)).
+  "Системная" отдаёт управление CSS `prefers-color-scheme`; "Светлая"/"Тёмная" проставляют
+  `data-theme` на `<html>` и форсируют тему независимо от ОС/браузера — это нужно, например,
+  в Firefox, где настройка "Website appearance" не влияет на страницы расширений (`moz-extension://`),
+  и тема там всегда следует системной, а не выбору пользователя на уровне контента.
 
 ## Правила замены
 

@@ -32,6 +32,39 @@
   }
 }
 
+/* Явный выбор темы в настройках (независимо от системного prefers-color-scheme). */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #666666;
+  --border: #d8dadf;
+  --field-bg: #f7f8fa;
+  --accent: #3b6ef6;
+  --accent-fg: #ffffff;
+  --accent-hover: #2f58cf;
+  --secondary-bg: #eef1f6;
+  --secondary-fg: #1a1a1a;
+  --secondary-hover: #e1e5ec;
+  --success: #1e8e3e;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #1e1f22;
+  --fg: #f0f0f2;
+  --muted: #a0a3ab;
+  --border: #3a3b40;
+  --field-bg: #2a2b2f;
+  --accent: #5b82ff;
+  --accent-fg: #ffffff;
+  --accent-hover: #6f90ff;
+  --secondary-bg: #2d2f34;
+  --secondary-fg: #f0f0f2;
+  --secondary-hover: #383a40;
+  --success: #5fcb81;
+}
+
 * {
   box-sizing: border-box;
 }

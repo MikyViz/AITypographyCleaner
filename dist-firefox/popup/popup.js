@@ -1113,10 +1113,23 @@
 
   // src/shared/settings.ts
   var import_webextension_polyfill = __toESM(require_browser_polyfill(), 1);
+
+  // src/shared/theme.ts
+  var DEFAULT_THEME = "system";
+  function applyTheme(theme) {
+    if (theme === "system") {
+      document.documentElement.removeAttribute("data-theme");
+    } else {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+  }
+
+  // src/shared/settings.ts
   var DEFAULT_WHITELIST = ["chatgpt.com", "claude.ai", "gemini.google.com"];
   var defaultSettings = {
     options: defaultOptions,
-    whitelist: DEFAULT_WHITELIST
+    whitelist: DEFAULT_WHITELIST,
+    theme: DEFAULT_THEME
   };
   async function getSettings() {
     const stored = await import_webextension_polyfill.default.storage.sync.get(
@@ -1124,7 +1137,8 @@
     );
     return {
       options: { ...defaultOptions, ...stored.options },
-      whitelist: stored.whitelist ?? DEFAULT_WHITELIST
+      whitelist: stored.whitelist ?? DEFAULT_WHITELIST,
+      theme: stored.theme ?? DEFAULT_THEME
     };
   }
 
@@ -1135,6 +1149,7 @@
   var copyButton = document.getElementById("copy");
   var status = document.getElementById("status");
   var openOptions = document.getElementById("open-options");
+  void getSettings().then((settings) => applyTheme(settings.theme));
   openOptions.addEventListener("click", (event) => {
     event.preventDefault();
     void import_webextension_polyfill2.default.runtime.openOptionsPage();
