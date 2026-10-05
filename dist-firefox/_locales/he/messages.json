@@ -14,6 +14,8 @@
   "themeSystem": { "message": "מערכת" },
   "themeLight": { "message": "בהירה" },
   "themeDark": { "message": "כהה" },
+  "languageLabel": { "message": "שפה" },
+  "languageAuto": { "message": "אוטומטי (לפי שפת הדפדפן)" },
   "rulesHeading": { "message": "קבוצות כללים" },
   "quotesRule": { "message": "מרכאות („ ” « » ‘ ’ → \" ו־')" },
   "dashesRule": { "message": "מקפים (— / – → -)" },

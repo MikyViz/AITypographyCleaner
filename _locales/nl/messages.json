@@ -14,6 +14,8 @@
   "themeSystem": { "message": "Systeem" },
   "themeLight": { "message": "Licht" },
   "themeDark": { "message": "Donker" },
+  "languageLabel": { "message": "Taal" },
+  "languageAuto": { "message": "Automatisch (taal van de browser)" },
   "rulesHeading": { "message": "Regelgroepen" },
   "quotesRule": { "message": "Aanhalingstekens (“ ” „ « » ‘ ’ → \" en ')" },
   "dashesRule": { "message": "Gedachtestreepjes (— / – → koppelteken)" },

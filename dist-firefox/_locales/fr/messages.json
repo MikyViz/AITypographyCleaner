@@ -14,6 +14,8 @@
   "themeSystem": { "message": "Système" },
   "themeLight": { "message": "Clair" },
   "themeDark": { "message": "Sombre" },
+  "languageLabel": { "message": "Langue" },
+  "languageAuto": { "message": "Automatique (langue du navigateur)" },
   "rulesHeading": { "message": "Groupes de règles" },
   "quotesRule": { "message": "Guillemets (« » „ “ ‘ ’ → \" et ')" },
   "dashesRule": { "message": "Tirets (— / – → trait d’union)" },

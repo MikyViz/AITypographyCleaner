@@ -1,4 +1,5 @@
 import browser, { type Scripting } from 'webextension-polyfill';
+import { getMessage, resolveLanguage } from './shared/i18n';
 import type { ContentMessage } from './shared/messages';
 import { DEFAULT_WHITELIST, domainToOriginPattern, getSettings, onSettingsChanged } from './shared/settings';
 
@@ -9,24 +10,19 @@ const CLEAN_SELECTION_MENU_ID = 'ai-typography-cleaner-clean-selection';
 const PASTE_CLEANED_MENU_ID = 'ai-typography-cleaner-paste-cleaned';
 
 browser.runtime.onInstalled.addListener(() => {
-  browser.contextMenus.create({
-    id: CLEAN_SELECTION_MENU_ID,
-    title: browser.i18n.getMessage('contextCleanSelection'),
-    contexts: ['selection'],
-  });
-  browser.contextMenus.create({
-    id: PASTE_CLEANED_MENU_ID,
-    title: browser.i18n.getMessage('contextPasteCleaned'),
-    contexts: ['editable'],
-  });
+  void createContextMenus();
   void syncDynamicContentScripts();
 });
 
 browser.runtime.onStartup.addListener(() => {
+  void updateContextMenuTitles();
   void syncDynamicContentScripts();
 });
 
-onSettingsChanged(() => void syncDynamicContentScripts());
+onSettingsChanged(() => {
+  void syncDynamicContentScripts();
+  void updateContextMenuTitles();
+});
 browser.permissions.onAdded.addListener(() => void syncDynamicContentScripts());
 browser.permissions.onRemoved.addListener(() => void syncDynamicContentScripts());
 
@@ -38,6 +34,37 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
     void sendToTab(tab.id, { type: 'paste-cleaned' });
   }
 });
+
+async function createContextMenus(): Promise<void> {
+  const { language } = await getSettings();
+  const activeLanguage = resolveLanguage(language);
+  browser.contextMenus.create({
+    id: CLEAN_SELECTION_MENU_ID,
+    title: getMessage(activeLanguage, 'contextCleanSelection'),
+    contexts: ['selection'],
+  });
+  browser.contextMenus.create({
+    id: PASTE_CLEANED_MENU_ID,
+    title: getMessage(activeLanguage, 'contextPasteCleaned'),
+    contexts: ['editable'],
+  });
+}
+
+/** Обновляет заголовки пунктов меню после смены языка в настройках или при старте браузера. */
+async function updateContextMenuTitles(): Promise<void> {
+  const { language } = await getSettings();
+  const activeLanguage = resolveLanguage(language);
+  try {
+    await browser.contextMenus.update(CLEAN_SELECTION_MENU_ID, {
+      title: getMessage(activeLanguage, 'contextCleanSelection'),
+    });
+    await browser.contextMenus.update(PASTE_CLEANED_MENU_ID, {
+      title: getMessage(activeLanguage, 'contextPasteCleaned'),
+    });
+  } catch {
+    // Пункты меню ещё не созданы (например, до onInstalled) — ничего не делаем.
+  }
+}
 
 async function sendToTab(tabId: number, message: ContentMessage): Promise<void> {
   if (!(await ping(tabId))) {

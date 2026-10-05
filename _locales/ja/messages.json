@@ -14,6 +14,8 @@
   "themeSystem": { "message": "システム設定" },
   "themeLight": { "message": "ライト" },
   "themeDark": { "message": "ダーク" },
+  "languageLabel": { "message": "言語" },
+  "languageAuto": { "message": "自動（ブラウザの言語に従う）" },
   "rulesHeading": { "message": "ルール" },
   "quotesRule": { "message": "引用符（“ ” „ « » ‘ ’ → \" と '）" },
   "dashesRule": { "message": "ダッシュ（— / – → ハイフン）" },

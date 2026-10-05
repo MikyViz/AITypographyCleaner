@@ -14,6 +14,8 @@
   "themeSystem": { "message": "System" },
   "themeLight": { "message": "Light" },
   "themeDark": { "message": "Dark" },
+  "languageLabel": { "message": "Language" },
+  "languageAuto": { "message": "Auto (detect from browser)" },
   "rulesHeading": { "message": "Rule groups" },
   "quotesRule": { "message": "Quotes (“ ” „ « » ‘ ’ ‹ › → \" and ')" },
   "dashesRule": { "message": "Dashes (— / – → hyphen)" },

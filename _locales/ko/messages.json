@@ -14,6 +14,8 @@
   "themeSystem": { "message": "시스템" },
   "themeLight": { "message": "밝게" },
   "themeDark": { "message": "어둡게" },
+  "languageLabel": { "message": "언어" },
+  "languageAuto": { "message": "자동 (브라우저 언어 사용)" },
   "rulesHeading": { "message": "규칙 그룹" },
   "quotesRule": { "message": "따옴표 (“ ” „ « » ‘ ’ → \" 및 ')" },
   "dashesRule": { "message": "대시 (— / – → 하이픈)" },

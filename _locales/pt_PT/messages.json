@@ -14,6 +14,8 @@
   "themeSystem": { "message": "Sistema" },
   "themeLight": { "message": "Claro" },
   "themeDark": { "message": "Escuro" },
+  "languageLabel": { "message": "Idioma" },
+  "languageAuto": { "message": "Automático (idioma do navegador)" },
   "rulesHeading": { "message": "Grupos de regras" },
   "quotesRule": { "message": "Aspas (“ ” „ « » ‘ ’ → \" e ')" },
   "dashesRule": { "message": "Travessões (— / – → hífen)" },

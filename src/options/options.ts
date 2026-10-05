@@ -1,6 +1,12 @@
 import browser from 'webextension-polyfill';
 import type { Options } from '../core/normalize';
-import { localizeDocument } from '../shared/i18n';
+import {
+  getMessage,
+  localizeDocument,
+  resolveLanguage,
+  type LanguageSetting,
+  type SupportedLanguage,
+} from '../shared/i18n';
 import {
   DEFAULT_WHITELIST,
   domainToOriginPattern,
@@ -23,6 +29,7 @@ const checkboxIds = [
 
 const dashModeSelect = document.getElementById('dashMode') as HTMLSelectElement;
 const themeSelect = document.getElementById('theme') as HTMLSelectElement;
+const languageSelect = document.getElementById('language') as HTMLSelectElement;
 const whitelistEl = document.getElementById('whitelist') as HTMLUListElement;
 const newDomainInput = document.getElementById('new-domain') as HTMLInputElement;
 const addDomainButton = document.getElementById('add-domain') as HTMLButtonElement;
@@ -30,8 +37,12 @@ const statusEl = document.getElementById('status') as HTMLParagraphElement;
 
 let whitelist: string[] = [...DEFAULT_WHITELIST];
 let theme: Theme = DEFAULT_THEME;
+let language: LanguageSetting = 'auto';
+let activeLanguage: SupportedLanguage = resolveLanguage(language);
 
-localizeDocument();
+// Локализуем сразу по языку браузера, чтобы избежать пустых подписей до загрузки настроек;
+// load() ниже переприменит перевод, если пользователь выбрал язык вручную.
+localizeDocument(activeLanguage);
 
 function checkbox(id: (typeof checkboxIds)[number]): HTMLInputElement {
   return document.getElementById(id) as HTMLInputElement;
@@ -67,6 +78,12 @@ async function load(): Promise<void> {
   applyTheme(theme);
   themeSelect.addEventListener('change', onThemeChange);
 
+  language = settings.language;
+  activeLanguage = resolveLanguage(language);
+  languageSelect.value = language;
+  localizeDocument(activeLanguage);
+  languageSelect.addEventListener('change', onLanguageChange);
+
   whitelist = [...settings.whitelist];
   renderWhitelist();
 }
@@ -74,16 +91,27 @@ async function load(): Promise<void> {
 async function onOptionsChange(): Promise<void> {
   const settings = await getSettings();
   const options = readOptionsFromForm(settings.options);
-  await saveSettings({ options, whitelist, theme });
-  showStatus(browser.i18n.getMessage('savedStatus'));
+  await saveSettings({ options, whitelist, theme, language });
+  showStatus(getMessage(activeLanguage, 'savedStatus'));
 }
 
 async function onThemeChange(): Promise<void> {
   theme = themeSelect.value as Theme;
   applyTheme(theme);
   const settings = await getSettings();
-  await saveSettings({ options: settings.options, whitelist, theme });
-  showStatus(browser.i18n.getMessage('savedStatus'));
+  await saveSettings({ options: settings.options, whitelist, theme, language });
+  showStatus(getMessage(activeLanguage, 'savedStatus'));
+}
+
+async function onLanguageChange(): Promise<void> {
+  language = languageSelect.value as LanguageSetting;
+  activeLanguage = resolveLanguage(language);
+  localizeDocument(activeLanguage);
+  languageSelect.value = language;
+  renderWhitelist();
+  const settings = await getSettings();
+  await saveSettings({ options: settings.options, whitelist, theme, language });
+  showStatus(getMessage(activeLanguage, 'savedStatus'));
 }
 
 function renderWhitelist(): void {
@@ -103,34 +131,34 @@ function renderWhitelist(): void {
 async function removeDomain(domain: string): Promise<void> {
   whitelist = whitelist.filter((d) => d !== domain);
   const settings = await getSettings();
-  await saveSettings({ options: settings.options, whitelist, theme });
+  await saveSettings({ options: settings.options, whitelist, theme, language });
   renderWhitelist();
-  showStatus(browser.i18n.getMessage('savedStatus'));
+  showStatus(getMessage(activeLanguage, 'savedStatus'));
 }
 
 addDomainButton.addEventListener('click', async () => {
   const domain = sanitizeDomain(newDomainInput.value);
   if (!domain) {
-    showStatus(browser.i18n.getMessage('invalidDomainStatus'), true);
+    showStatus(getMessage(activeLanguage, 'invalidDomainStatus'), true);
     return;
   }
   if (whitelist.includes(domain)) {
-    showStatus(browser.i18n.getMessage('duplicateDomainStatus'), true);
+    showStatus(getMessage(activeLanguage, 'duplicateDomainStatus'), true);
     return;
   }
 
   const granted = await browser.permissions.request({ origins: [domainToOriginPattern(domain)] });
   if (!granted) {
-    showStatus(browser.i18n.getMessage('permissionDeniedStatus'), true);
+    showStatus(getMessage(activeLanguage, 'permissionDeniedStatus'), true);
     return;
   }
 
   whitelist = [...whitelist, domain];
   const settings = await getSettings();
-  await saveSettings({ options: settings.options, whitelist, theme });
+  await saveSettings({ options: settings.options, whitelist, theme, language });
   newDomainInput.value = '';
   renderWhitelist();
-  showStatus(browser.i18n.getMessage('domainAddedStatus'));
+  showStatus(getMessage(activeLanguage, 'domainAddedStatus'));
 });
 
 function showStatus(text: string, isError = false): void {

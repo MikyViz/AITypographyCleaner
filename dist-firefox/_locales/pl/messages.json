@@ -14,6 +14,8 @@
   "themeSystem": { "message": "Systemowy" },
   "themeLight": { "message": "Jasny" },
   "themeDark": { "message": "Ciemny" },
+  "languageLabel": { "message": "Język" },
+  "languageAuto": { "message": "Automatycznie (język przeglądarki)" },
   "rulesHeading": { "message": "Grupy reguł" },
   "quotesRule": { "message": "Cudzysłowy („ ” « » ‘ ’ → \" i ')" },
   "dashesRule": { "message": "Myślniki (— / – → łącznik)" },

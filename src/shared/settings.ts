@@ -1,11 +1,13 @@
 import browser from 'webextension-polyfill';
 import { defaultOptions, type Options } from '../core/normalize';
+import { DEFAULT_LANGUAGE, type LanguageSetting } from './i18n';
 import { DEFAULT_THEME, type Theme } from './theme';
 
 export interface StoredSettings {
   options: Options;
   whitelist: string[];
   theme: Theme;
+  language: LanguageSetting;
 }
 
 export const DEFAULT_WHITELIST = ['chatgpt.com', 'claude.ai', 'gemini.google.com'];
@@ -14,6 +16,7 @@ export const defaultSettings: StoredSettings = {
   options: defaultOptions,
   whitelist: DEFAULT_WHITELIST,
   theme: DEFAULT_THEME,
+  language: DEFAULT_LANGUAGE,
 };
 
 export async function getSettings(): Promise<StoredSettings> {
@@ -24,6 +27,7 @@ export async function getSettings(): Promise<StoredSettings> {
     options: { ...defaultOptions, ...stored.options },
     whitelist: stored.whitelist ?? DEFAULT_WHITELIST,
     theme: stored.theme ?? DEFAULT_THEME,
+    language: stored.language ?? DEFAULT_LANGUAGE,
   };
 }
 

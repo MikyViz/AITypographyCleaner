@@ -1017,7 +1017,7 @@
   });
 
   // src/content.ts
-  var import_webextension_polyfill2 = __toESM(require_browser_polyfill(), 1);
+  var import_webextension_polyfill3 = __toESM(require_browser_polyfill(), 1);
 
   // src/core/rules.ts
   var DOUBLE_QUOTES = /[\u201C\u201D\u201E\u00AB\u00BB]/g;
@@ -1112,7 +1112,11 @@
   }
 
   // src/shared/settings.ts
+  var import_webextension_polyfill2 = __toESM(require_browser_polyfill(), 1);
+
+  // src/shared/i18n.ts
   var import_webextension_polyfill = __toESM(require_browser_polyfill(), 1);
+  var DEFAULT_LANGUAGE = "auto";
 
   // src/shared/theme.ts
   var DEFAULT_THEME = "system";
@@ -1122,20 +1126,22 @@
   var defaultSettings = {
     options: defaultOptions,
     whitelist: DEFAULT_WHITELIST,
-    theme: DEFAULT_THEME
+    theme: DEFAULT_THEME,
+    language: DEFAULT_LANGUAGE
   };
   async function getSettings() {
-    const stored = await import_webextension_polyfill.default.storage.sync.get(
+    const stored = await import_webextension_polyfill2.default.storage.sync.get(
       defaultSettings
     );
     return {
       options: { ...defaultOptions, ...stored.options },
       whitelist: stored.whitelist ?? DEFAULT_WHITELIST,
-      theme: stored.theme ?? DEFAULT_THEME
+      theme: stored.theme ?? DEFAULT_THEME,
+      language: stored.language ?? DEFAULT_LANGUAGE
     };
   }
   function onSettingsChanged(callback) {
-    import_webextension_polyfill.default.storage.onChanged.addListener((_changes, area) => {
+    import_webextension_polyfill2.default.storage.onChanged.addListener((_changes, area) => {
       if (area !== "sync") return;
       void getSettings().then(callback);
     });
@@ -1155,7 +1161,7 @@
       currentOptions = settings.options;
     });
     document.addEventListener("copy", handleCopy, true);
-    import_webextension_polyfill2.default.runtime.onMessage.addListener(handleMessage);
+    import_webextension_polyfill3.default.runtime.onMessage.addListener(handleMessage);
     function handleCopy(event) {
       if (!currentOptions || !event.clipboardData) return;
       const selection = window.getSelection();

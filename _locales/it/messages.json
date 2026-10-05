@@ -14,6 +14,8 @@
   "themeSystem": { "message": "Sistema" },
   "themeLight": { "message": "Chiaro" },
   "themeDark": { "message": "Scuro" },
+  "languageLabel": { "message": "Lingua" },
+  "languageAuto": { "message": "Automatico (lingua del browser)" },
   "rulesHeading": { "message": "Gruppi di regole" },
   "quotesRule": { "message": "Virgolette (« » „ “ ‘ ’ → \" e ')" },
   "dashesRule": { "message": "Trattini (— / – → trattino)" },

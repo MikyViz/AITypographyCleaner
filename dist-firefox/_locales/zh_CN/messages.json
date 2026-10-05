@@ -14,6 +14,8 @@
   "themeSystem": { "message": "跟随系统" },
   "themeLight": { "message": "浅色" },
   "themeDark": { "message": "深色" },
+  "languageLabel": { "message": "语言" },
+  "languageAuto": { "message": "自动（根据浏览器语言）" },
   "rulesHeading": { "message": "规则组" },
   "quotesRule": { "message": "引号（“ ” „ « » ‘ ’ → \" 和 '）" },
   "dashesRule": { "message": "破折号（— / – → 连字符）" },
