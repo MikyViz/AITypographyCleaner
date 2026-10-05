@@ -1,7 +1,10 @@
 import browser from 'webextension-polyfill';
 import { normalize } from '../core/normalize';
+import { localizeDocument } from '../shared/i18n';
 import { getSettings } from '../shared/settings';
 import { applyTheme } from '../shared/theme';
+
+localizeDocument();
 
 const input = document.getElementById('input') as HTMLTextAreaElement;
 const output = document.getElementById('output') as HTMLTextAreaElement;
@@ -26,7 +29,7 @@ cleanButton.addEventListener('click', async () => {
 
 copyButton.addEventListener('click', async () => {
   await navigator.clipboard.writeText(output.value);
-  status.textContent = 'Скопировано!';
+  status.textContent = browser.i18n.getMessage('copiedStatus');
   setTimeout(() => {
     status.textContent = '';
   }, 1500);

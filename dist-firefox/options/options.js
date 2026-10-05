@@ -1017,10 +1017,24 @@
   });
 
   // src/options/options.ts
-  var import_webextension_polyfill2 = __toESM(require_browser_polyfill(), 1);
+  var import_webextension_polyfill3 = __toESM(require_browser_polyfill(), 1);
+
+  // src/shared/i18n.ts
+  var import_webextension_polyfill = __toESM(require_browser_polyfill(), 1);
+  function localizeDocument() {
+    const locale = import_webextension_polyfill.default.i18n.getUILanguage();
+    document.documentElement.lang = locale;
+    document.documentElement.dir = locale.toLowerCase().startsWith("he") ? "rtl" : "ltr";
+    document.querySelectorAll("[data-i18n]").forEach((element) => {
+      element.textContent = import_webextension_polyfill.default.i18n.getMessage(element.dataset.i18n ?? "");
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+      element.placeholder = import_webextension_polyfill.default.i18n.getMessage(element.dataset.i18nPlaceholder ?? "");
+    });
+  }
 
   // src/shared/settings.ts
-  var import_webextension_polyfill = __toESM(require_browser_polyfill(), 1);
+  var import_webextension_polyfill2 = __toESM(require_browser_polyfill(), 1);
 
   // src/core/rules.ts
   var EMOJI = new RegExp("\\p{Extended_Pictographic}(?:[\\u{1F3FB}-\\u{1F3FF}]|\\uFE0F|\\u200D\\p{Extended_Pictographic})*|[\\u{1F1E6}-\\u{1F1FF}]{2}|[0-9#*]\\uFE0F?\\u20E3", "gu");
@@ -1056,7 +1070,7 @@
     theme: DEFAULT_THEME
   };
   async function getSettings() {
-    const stored = await import_webextension_polyfill.default.storage.sync.get(
+    const stored = await import_webextension_polyfill2.default.storage.sync.get(
       defaultSettings
     );
     return {
@@ -1066,7 +1080,7 @@
     };
   }
   async function saveSettings(settings) {
-    await import_webextension_polyfill.default.storage.sync.set(settings);
+    await import_webextension_polyfill2.default.storage.sync.set(settings);
   }
   function sanitizeDomain(input) {
     const stripped = input.trim().toLowerCase().replace(/^[a-z]+:\/\//, "").split("/")[0] ?? "";
@@ -1095,6 +1109,7 @@
   var statusEl = document.getElementById("status");
   var whitelist = [...DEFAULT_WHITELIST];
   var theme = DEFAULT_THEME;
+  localizeDocument();
   function checkbox(id) {
     return document.getElementById(id);
   }
@@ -1131,14 +1146,14 @@
     const settings = await getSettings();
     const options = readOptionsFromForm(settings.options);
     await saveSettings({ options, whitelist, theme });
-    showStatus("\u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043E");
+    showStatus(import_webextension_polyfill3.default.i18n.getMessage("savedStatus"));
   }
   async function onThemeChange() {
     theme = themeSelect.value;
     applyTheme(theme);
     const settings = await getSettings();
     await saveSettings({ options: settings.options, whitelist, theme });
-    showStatus("\u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043E");
+    showStatus(import_webextension_polyfill3.default.i18n.getMessage("savedStatus"));
   }
   function renderWhitelist() {
     whitelistEl.innerHTML = "";
@@ -1158,21 +1173,21 @@
     const settings = await getSettings();
     await saveSettings({ options: settings.options, whitelist, theme });
     renderWhitelist();
-    showStatus("\u0421\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043E");
+    showStatus(import_webextension_polyfill3.default.i18n.getMessage("savedStatus"));
   }
   addDomainButton.addEventListener("click", async () => {
     const domain = sanitizeDomain(newDomainInput.value);
     if (!domain) {
-      showStatus("\u041D\u0435\u043A\u043E\u0440\u0440\u0435\u043A\u0442\u043D\u044B\u0439 \u0434\u043E\u043C\u0435\u043D", true);
+      showStatus(import_webextension_polyfill3.default.i18n.getMessage("invalidDomainStatus"), true);
       return;
     }
     if (whitelist.includes(domain)) {
-      showStatus("\u0414\u043E\u043C\u0435\u043D \u0443\u0436\u0435 \u0432 \u0441\u043F\u0438\u0441\u043A\u0435", true);
+      showStatus(import_webextension_polyfill3.default.i18n.getMessage("duplicateDomainStatus"), true);
       return;
     }
-    const granted = await import_webextension_polyfill2.default.permissions.request({ origins: [domainToOriginPattern(domain)] });
+    const granted = await import_webextension_polyfill3.default.permissions.request({ origins: [domainToOriginPattern(domain)] });
     if (!granted) {
-      showStatus("\u0414\u043E\u0441\u0442\u0443\u043F \u043D\u0435 \u043F\u0440\u0435\u0434\u043E\u0441\u0442\u0430\u0432\u043B\u0435\u043D", true);
+      showStatus(import_webextension_polyfill3.default.i18n.getMessage("permissionDeniedStatus"), true);
       return;
     }
     whitelist = [...whitelist, domain];
@@ -1180,7 +1195,7 @@
     await saveSettings({ options: settings.options, whitelist, theme });
     newDomainInput.value = "";
     renderWhitelist();
-    showStatus("\u0414\u043E\u043C\u0435\u043D \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D");
+    showStatus(import_webextension_polyfill3.default.i18n.getMessage("domainAddedStatus"));
   });
   function showStatus(text, isError = false) {
     statusEl.textContent = text;

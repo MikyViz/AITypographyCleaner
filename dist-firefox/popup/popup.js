@@ -1017,7 +1017,7 @@
   });
 
   // src/popup/popup.ts
-  var import_webextension_polyfill2 = __toESM(require_browser_polyfill(), 1);
+  var import_webextension_polyfill3 = __toESM(require_browser_polyfill(), 1);
 
   // src/core/rules.ts
   var DOUBLE_QUOTES = /[\u201C\u201D\u201E\u00AB\u00BB]/g;
@@ -1111,8 +1111,22 @@
     return processed;
   }
 
-  // src/shared/settings.ts
+  // src/shared/i18n.ts
   var import_webextension_polyfill = __toESM(require_browser_polyfill(), 1);
+  function localizeDocument() {
+    const locale = import_webextension_polyfill.default.i18n.getUILanguage();
+    document.documentElement.lang = locale;
+    document.documentElement.dir = locale.toLowerCase().startsWith("he") ? "rtl" : "ltr";
+    document.querySelectorAll("[data-i18n]").forEach((element) => {
+      element.textContent = import_webextension_polyfill.default.i18n.getMessage(element.dataset.i18n ?? "");
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+      element.placeholder = import_webextension_polyfill.default.i18n.getMessage(element.dataset.i18nPlaceholder ?? "");
+    });
+  }
+
+  // src/shared/settings.ts
+  var import_webextension_polyfill2 = __toESM(require_browser_polyfill(), 1);
 
   // src/shared/theme.ts
   var DEFAULT_THEME = "system";
@@ -1132,7 +1146,7 @@
     theme: DEFAULT_THEME
   };
   async function getSettings() {
-    const stored = await import_webextension_polyfill.default.storage.sync.get(
+    const stored = await import_webextension_polyfill2.default.storage.sync.get(
       defaultSettings
     );
     return {
@@ -1143,6 +1157,7 @@
   }
 
   // src/popup/popup.ts
+  localizeDocument();
   var input = document.getElementById("input");
   var output = document.getElementById("output");
   var cleanButton = document.getElementById("clean");
@@ -1152,7 +1167,7 @@
   void getSettings().then((settings) => applyTheme(settings.theme));
   openOptions.addEventListener("click", (event) => {
     event.preventDefault();
-    void import_webextension_polyfill2.default.runtime.openOptionsPage();
+    void import_webextension_polyfill3.default.runtime.openOptionsPage();
   });
   cleanButton.addEventListener("click", async () => {
     const settings = await getSettings();
@@ -1162,7 +1177,7 @@
   });
   copyButton.addEventListener("click", async () => {
     await navigator.clipboard.writeText(output.value);
-    status.textContent = "\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E!";
+    status.textContent = import_webextension_polyfill3.default.i18n.getMessage("copiedStatus");
     setTimeout(() => {
       status.textContent = "";
     }, 1500);

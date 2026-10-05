@@ -1076,12 +1076,12 @@
   import_webextension_polyfill2.default.runtime.onInstalled.addListener(() => {
     import_webextension_polyfill2.default.contextMenus.create({
       id: CLEAN_SELECTION_MENU_ID,
-      title: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0432\u044B\u0434\u0435\u043B\u0435\u043D\u043D\u043E\u0435",
+      title: import_webextension_polyfill2.default.i18n.getMessage("contextCleanSelection"),
       contexts: ["selection"]
     });
     import_webextension_polyfill2.default.contextMenus.create({
       id: PASTE_CLEANED_MENU_ID,
-      title: "\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u044C \u043E\u0447\u0438\u0449\u0435\u043D\u043D\u044B\u043C",
+      title: import_webextension_polyfill2.default.i18n.getMessage("contextPasteCleaned"),
       contexts: ["editable"]
     });
     void syncDynamicContentScripts();

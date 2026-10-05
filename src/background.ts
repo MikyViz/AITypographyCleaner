@@ -11,12 +11,12 @@ const PASTE_CLEANED_MENU_ID = 'ai-typography-cleaner-paste-cleaned';
 browser.runtime.onInstalled.addListener(() => {
   browser.contextMenus.create({
     id: CLEAN_SELECTION_MENU_ID,
-    title: 'Очистить выделенное',
+    title: browser.i18n.getMessage('contextCleanSelection'),
     contexts: ['selection'],
   });
   browser.contextMenus.create({
     id: PASTE_CLEANED_MENU_ID,
-    title: 'Вставить очищенным',
+    title: browser.i18n.getMessage('contextPasteCleaned'),
     contexts: ['editable'],
   });
   void syncDynamicContentScripts();

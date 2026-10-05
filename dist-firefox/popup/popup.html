@@ -1,27 +1,27 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>AI Typography Cleaner</title>
+    <title data-i18n="appName"></title>
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <main>
-      <h1>AI Typography Cleaner</h1>
+      <h1 data-i18n="appName"></h1>
 
-      <label for="input">Вставьте текст</label>
-      <textarea id="input" rows="6" placeholder="Вставьте текст сюда..."></textarea>
+      <label for="input" data-i18n="popupPasteLabel"></label>
+      <textarea id="input" rows="6" data-i18n-placeholder="popupInputPlaceholder"></textarea>
 
       <div class="actions">
-        <button id="clean" class="primary">Очистить</button>
-        <button id="copy" class="secondary" disabled>Копировать</button>
+        <button id="clean" class="primary" data-i18n="cleanButton"></button>
+        <button id="copy" class="secondary" data-i18n="copyButton" disabled></button>
       </div>
 
-      <label for="output">Результат</label>
+      <label for="output" data-i18n="resultLabel"></label>
       <textarea id="output" rows="6" readonly></textarea>
 
       <p id="status" class="status" role="status"></p>
-      <a id="open-options" href="#">Настройки</a>
+      <a id="open-options" href="#" data-i18n="settingsLink"></a>
     </main>
     <script type="module" src="popup.js"></script>
   </body>

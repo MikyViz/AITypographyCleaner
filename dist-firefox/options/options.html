@@ -1,52 +1,52 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Настройки — AI Typography Cleaner</title>
+    <title data-i18n="optionsTitle"></title>
     <link rel="stylesheet" href="options.css" />
   </head>
   <body>
     <main>
-      <h1>AI Typography Cleaner — настройки</h1>
+      <h1 data-i18n="optionsTitle"></h1>
 
       <section>
-        <h2>Тема оформления</h2>
+        <h2 data-i18n="themeHeading"></h2>
         <label class="dash-row">
-          <span>Тема</span>
+          <span data-i18n="themeLabel"></span>
           <select id="theme">
-            <option value="system">Системная</option>
-            <option value="light">Светлая</option>
-            <option value="dark">Тёмная</option>
+            <option value="system" data-i18n="themeSystem"></option>
+            <option value="light" data-i18n="themeLight"></option>
+            <option value="dark" data-i18n="themeDark"></option>
           </select>
         </label>
       </section>
 
       <section>
-        <h2>Группы правил</h2>
-        <label><input type="checkbox" id="quotes" /> Кавычки ( “ ” „ « » ‘ ’ ‹ › → " и ' )</label>
+        <h2 data-i18n="rulesHeading"></h2>
+        <label><input type="checkbox" id="quotes" /> <span data-i18n="quotesRule"></span></label>
         <label class="dash-row">
-          <span><input type="checkbox" id="dashes" /> Тире (— / – → дефис)</span>
+          <span><input type="checkbox" id="dashes" /> <span data-i18n="dashesRule"></span></span>
           <select id="dashMode">
-            <option value=" - ">" - " (с пробелами)</option>
-            <option value="-">"-" (без пробелов)</option>
-            <option value=", ">", " (запятая)</option>
+            <option value=" - " data-i18n="dashModeSpaced"></option>
+            <option value="-" data-i18n="dashModeTight"></option>
+            <option value=", " data-i18n="dashModeComma"></option>
           </select>
         </label>
-        <label><input type="checkbox" id="ellipsis" /> Многоточие ( … → ... )</label>
-        <label><input type="checkbox" id="spaces" /> Спецпробелы → обычный пробел</label>
-        <label><input type="checkbox" id="invisibles" /> Удалять невидимые символы</label>
-        <label><input type="checkbox" id="misc" /> Прочее (минус, буллеты, стрелки, ×, праймы)</label>
-        <label><input type="checkbox" id="emojis" /> Удалять смайлики (эмодзи 😀, флаги, ©/®/™)</label>
-        <label><input type="checkbox" id="collapseSpaces" /> Схлопывать двойные пробелы</label>
+        <label><input type="checkbox" id="ellipsis" /> <span data-i18n="ellipsisRule"></span></label>
+        <label><input type="checkbox" id="spaces" /> <span data-i18n="spacesRule"></span></label>
+        <label><input type="checkbox" id="invisibles" /> <span data-i18n="invisiblesRule"></span></label>
+        <label><input type="checkbox" id="misc" /> <span data-i18n="miscRule"></span></label>
+        <label><input type="checkbox" id="emojis" /> <span data-i18n="emojisRule"></span></label>
+        <label><input type="checkbox" id="collapseSpaces" /> <span data-i18n="collapseSpacesRule"></span></label>
       </section>
 
       <section>
-        <h2>Whitelist доменов</h2>
-        <p>Автоматическая очистка при копировании (Ctrl+C) работает только на этих сайтах.</p>
+        <h2 data-i18n="whitelistTitle"></h2>
+        <p data-i18n="whitelistDescription"></p>
         <ul id="whitelist"></ul>
         <div class="add-domain">
-          <input id="new-domain" type="text" placeholder="example.com" />
-          <button id="add-domain">Добавить</button>
+          <input id="new-domain" type="text" data-i18n-placeholder="domainPlaceholder" />
+          <button id="add-domain" data-i18n="addDomainButton"></button>
         </div>
       </section>
 

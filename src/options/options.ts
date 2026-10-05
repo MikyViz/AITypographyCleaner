@@ -1,5 +1,6 @@
 import browser from 'webextension-polyfill';
 import type { Options } from '../core/normalize';
+import { localizeDocument } from '../shared/i18n';
 import {
   DEFAULT_WHITELIST,
   domainToOriginPattern,
@@ -29,6 +30,8 @@ const statusEl = document.getElementById('status') as HTMLParagraphElement;
 
 let whitelist: string[] = [...DEFAULT_WHITELIST];
 let theme: Theme = DEFAULT_THEME;
+
+localizeDocument();
 
 function checkbox(id: (typeof checkboxIds)[number]): HTMLInputElement {
   return document.getElementById(id) as HTMLInputElement;
@@ -72,7 +75,7 @@ async function onOptionsChange(): Promise<void> {
   const settings = await getSettings();
   const options = readOptionsFromForm(settings.options);
   await saveSettings({ options, whitelist, theme });
-  showStatus('Сохранено');
+  showStatus(browser.i18n.getMessage('savedStatus'));
 }
 
 async function onThemeChange(): Promise<void> {
@@ -80,7 +83,7 @@ async function onThemeChange(): Promise<void> {
   applyTheme(theme);
   const settings = await getSettings();
   await saveSettings({ options: settings.options, whitelist, theme });
-  showStatus('Сохранено');
+  showStatus(browser.i18n.getMessage('savedStatus'));
 }
 
 function renderWhitelist(): void {
@@ -102,23 +105,23 @@ async function removeDomain(domain: string): Promise<void> {
   const settings = await getSettings();
   await saveSettings({ options: settings.options, whitelist, theme });
   renderWhitelist();
-  showStatus('Сохранено');
+  showStatus(browser.i18n.getMessage('savedStatus'));
 }
 
 addDomainButton.addEventListener('click', async () => {
   const domain = sanitizeDomain(newDomainInput.value);
   if (!domain) {
-    showStatus('Некорректный домен', true);
+    showStatus(browser.i18n.getMessage('invalidDomainStatus'), true);
     return;
   }
   if (whitelist.includes(domain)) {
-    showStatus('Домен уже в списке', true);
+    showStatus(browser.i18n.getMessage('duplicateDomainStatus'), true);
     return;
   }
 
   const granted = await browser.permissions.request({ origins: [domainToOriginPattern(domain)] });
   if (!granted) {
-    showStatus('Доступ не предоставлен', true);
+    showStatus(browser.i18n.getMessage('permissionDeniedStatus'), true);
     return;
   }
 
@@ -127,7 +130,7 @@ addDomainButton.addEventListener('click', async () => {
   await saveSettings({ options: settings.options, whitelist, theme });
   newDomainInput.value = '';
   renderWhitelist();
-  showStatus('Домен добавлен');
+  showStatus(browser.i18n.getMessage('domainAddedStatus'));
 });
 
 function showStatus(text: string, isError = false): void {
@@ -139,4 +142,3 @@ function showStatus(text: string, isError = false): void {
 }
 
 void load();
-
