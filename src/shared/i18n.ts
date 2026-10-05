@@ -115,8 +115,29 @@ export function resolveLanguage(setting: LanguageSetting): SupportedLanguage {
   return setting;
 }
 
-export function getMessage(language: SupportedLanguage, key: string): string {
-  return CATALOGS[language]?.[key]?.message ?? CATALOGS.en[key]?.message ?? key;
+/** Подставляет {token} в сообщении значениями из substitutions (если заданы). */
+export function getMessage(
+  language: SupportedLanguage,
+  key: string,
+  substitutions?: Record<string, string>,
+): string {
+  const raw = CATALOGS[language]?.[key]?.message ?? CATALOGS.en[key]?.message ?? key;
+  if (!substitutions) return raw;
+  return raw.replace(/\{(\w+)\}/g, (match, token: string) => substitutions[token] ?? match);
+}
+
+/**
+ * Выбирает нужную словоформу по числу для языков со славянской системой
+ * множественного числа (1 / 2-4 / 5+, кроме 11-14): forms = [one, few, many].
+ * Например plural(2, ['кавычка', 'кавычки', 'кавычек']) → 'кавычки'.
+ */
+export function plural(n: number, forms: readonly [string, string, string]): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 14) return forms[2];
+  if (mod10 === 1) return forms[0];
+  if (mod10 >= 2 && mod10 <= 4) return forms[1];
+  return forms[2];
 }
 
 /** Локализует все элементы с data-i18n/data-i18n-placeholder и проставляет lang/dir на <html>. */

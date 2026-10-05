@@ -8,15 +8,21 @@ export interface StoredSettings {
   whitelist: string[];
   theme: Theme;
   language: LanguageSetting;
+  showToast: boolean;
+  showBreakdown: boolean;
 }
 
 export const DEFAULT_WHITELIST = ['chatgpt.com', 'claude.ai', 'gemini.google.com'];
+export const DEFAULT_SHOW_TOAST = true;
+export const DEFAULT_SHOW_BREAKDOWN = true;
 
 export const defaultSettings: StoredSettings = {
   options: defaultOptions,
   whitelist: DEFAULT_WHITELIST,
   theme: DEFAULT_THEME,
   language: DEFAULT_LANGUAGE,
+  showToast: DEFAULT_SHOW_TOAST,
+  showBreakdown: DEFAULT_SHOW_BREAKDOWN,
 };
 
 export async function getSettings(): Promise<StoredSettings> {
@@ -28,6 +34,8 @@ export async function getSettings(): Promise<StoredSettings> {
     whitelist: stored.whitelist ?? DEFAULT_WHITELIST,
     theme: stored.theme ?? DEFAULT_THEME,
     language: stored.language ?? DEFAULT_LANGUAGE,
+    showToast: stored.showToast ?? DEFAULT_SHOW_TOAST,
+    showBreakdown: stored.showBreakdown ?? DEFAULT_SHOW_BREAKDOWN,
   };
 }
 

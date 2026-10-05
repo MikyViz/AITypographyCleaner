@@ -1107,7 +1107,32 @@
     permissionDeniedStatus: { message: "Permission was not granted" },
     domainAddedStatus: { message: "Domain added" },
     contextCleanSelection: { message: "Clean selected text" },
-    contextPasteCleaned: { message: "Paste cleaned text" }
+    contextPasteCleaned: { message: "Paste cleaned text" },
+    notificationsHeading: { message: "Notifications" },
+    showToastLabel: { message: "Show notification" },
+    showBreakdownLabel: { message: "Show breakdown by group" },
+    toastTitle: { message: "Copied cleaned: replaced {count} {unit}" },
+    toastUnitCharacterOne: { message: "character" },
+    toastUnitCharacterFew: { message: "characters" },
+    toastUnitCharacterMany: { message: "characters" },
+    toastUnitQuotesOne: { message: "quote" },
+    toastUnitQuotesFew: { message: "quotes" },
+    toastUnitQuotesMany: { message: "quotes" },
+    toastUnitDashesOne: { message: "dash" },
+    toastUnitDashesFew: { message: "dashes" },
+    toastUnitDashesMany: { message: "dashes" },
+    toastUnitEllipsisOne: { message: "ellipsis" },
+    toastUnitEllipsisFew: { message: "ellipses" },
+    toastUnitEllipsisMany: { message: "ellipses" },
+    toastUnitSpacesOne: { message: "special space" },
+    toastUnitSpacesFew: { message: "special spaces" },
+    toastUnitSpacesMany: { message: "special spaces" },
+    toastUnitInvisiblesOne: { message: "invisible character" },
+    toastUnitInvisiblesFew: { message: "invisible characters" },
+    toastUnitInvisiblesMany: { message: "invisible characters" },
+    toastUnitOtherOne: { message: "other character" },
+    toastUnitOtherFew: { message: "other characters" },
+    toastUnitOtherMany: { message: "other characters" }
   };
 
   // _locales/es/messages.json
@@ -1635,7 +1660,32 @@
     permissionDeniedStatus: { message: "\u0414\u043E\u0441\u0442\u0443\u043F \u043D\u0435 \u043F\u0440\u0435\u0434\u043E\u0441\u0442\u0430\u0432\u043B\u0435\u043D" },
     domainAddedStatus: { message: "\u0414\u043E\u043C\u0435\u043D \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D" },
     contextCleanSelection: { message: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0432\u044B\u0434\u0435\u043B\u0435\u043D\u043D\u044B\u0439 \u0442\u0435\u043A\u0441\u0442" },
-    contextPasteCleaned: { message: "\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u044C \u043E\u0447\u0438\u0449\u0435\u043D\u043D\u044B\u0439 \u0442\u0435\u043A\u0441\u0442" }
+    contextPasteCleaned: { message: "\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u044C \u043E\u0447\u0438\u0449\u0435\u043D\u043D\u044B\u0439 \u0442\u0435\u043A\u0441\u0442" },
+    notificationsHeading: { message: "\u0423\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F" },
+    showToastLabel: { message: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0442\u044C \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u0435" },
+    showBreakdownLabel: { message: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0442\u044C \u0440\u0430\u0437\u0431\u0438\u0432\u043A\u0443 \u043F\u043E \u0433\u0440\u0443\u043F\u043F\u0430\u043C" },
+    toastTitle: { message: "\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E \u043E\u0447\u0438\u0449\u0435\u043D\u043D\u044B\u043C: \u0437\u0430\u043C\u0435\u043D\u0435\u043D\u043E {count} {unit}" },
+    toastUnitCharacterOne: { message: "\u0441\u0438\u043C\u0432\u043E\u043B" },
+    toastUnitCharacterFew: { message: "\u0441\u0438\u043C\u0432\u043E\u043B\u0430" },
+    toastUnitCharacterMany: { message: "\u0441\u0438\u043C\u0432\u043E\u043B\u043E\u0432" },
+    toastUnitQuotesOne: { message: "\u043A\u0430\u0432\u044B\u0447\u043A\u0430" },
+    toastUnitQuotesFew: { message: "\u043A\u0430\u0432\u044B\u0447\u043A\u0438" },
+    toastUnitQuotesMany: { message: "\u043A\u0430\u0432\u044B\u0447\u0435\u043A" },
+    toastUnitDashesOne: { message: "\u0442\u0438\u0440\u0435" },
+    toastUnitDashesFew: { message: "\u0442\u0438\u0440\u0435" },
+    toastUnitDashesMany: { message: "\u0442\u0438\u0440\u0435" },
+    toastUnitEllipsisOne: { message: "\u043C\u043D\u043E\u0433\u043E\u0442\u043E\u0447\u0438\u0435" },
+    toastUnitEllipsisFew: { message: "\u043C\u043D\u043E\u0433\u043E\u0442\u043E\u0447\u0438\u044F" },
+    toastUnitEllipsisMany: { message: "\u043C\u043D\u043E\u0433\u043E\u0442\u043E\u0447\u0438\u0439" },
+    toastUnitSpacesOne: { message: "\u0441\u043F\u0435\u0446\u043F\u0440\u043E\u0431\u0435\u043B" },
+    toastUnitSpacesFew: { message: "\u0441\u043F\u0435\u0446\u043F\u0440\u043E\u0431\u0435\u043B\u0430" },
+    toastUnitSpacesMany: { message: "\u0441\u043F\u0435\u0446\u043F\u0440\u043E\u0431\u0435\u043B\u043E\u0432" },
+    toastUnitInvisiblesOne: { message: "\u043D\u0435\u0432\u0438\u0434\u0438\u043C\u044B\u0439 \u0441\u0438\u043C\u0432\u043E\u043B" },
+    toastUnitInvisiblesFew: { message: "\u043D\u0435\u0432\u0438\u0434\u0438\u043C\u044B\u0445 \u0441\u0438\u043C\u0432\u043E\u043B\u0430" },
+    toastUnitInvisiblesMany: { message: "\u043D\u0435\u0432\u0438\u0434\u0438\u043C\u044B\u0445 \u0441\u0438\u043C\u0432\u043E\u043B\u043E\u0432" },
+    toastUnitOtherOne: { message: "\u043F\u0440\u043E\u0447\u0438\u0439 \u0441\u0438\u043C\u0432\u043E\u043B" },
+    toastUnitOtherFew: { message: "\u043F\u0440\u043E\u0447\u0438\u0445 \u0441\u0438\u043C\u0432\u043E\u043B\u0430" },
+    toastUnitOtherMany: { message: "\u043F\u0440\u043E\u0447\u0438\u0445 \u0441\u0438\u043C\u0432\u043E\u043B\u043E\u0432" }
   };
 
   // _locales/uk/messages.json
@@ -1830,8 +1880,10 @@
     if (setting === "auto") return normalizeBrowserLanguage(import_webextension_polyfill.default.i18n.getUILanguage());
     return setting;
   }
-  function getMessage(language2, key) {
-    return CATALOGS[language2]?.[key]?.message ?? CATALOGS.en[key]?.message ?? key;
+  function getMessage(language2, key, substitutions) {
+    const raw = CATALOGS[language2]?.[key]?.message ?? CATALOGS.en[key]?.message ?? key;
+    if (!substitutions) return raw;
+    return raw.replace(/\{(\w+)\}/g, (match, token) => substitutions[token] ?? match);
   }
   function localizeDocument(language2) {
     document.documentElement.lang = language2.replace("_", "-");
@@ -1875,11 +1927,15 @@
 
   // src/shared/settings.ts
   var DEFAULT_WHITELIST = ["chatgpt.com", "claude.ai", "gemini.google.com"];
+  var DEFAULT_SHOW_TOAST = true;
+  var DEFAULT_SHOW_BREAKDOWN = true;
   var defaultSettings = {
     options: defaultOptions,
     whitelist: DEFAULT_WHITELIST,
     theme: DEFAULT_THEME,
-    language: DEFAULT_LANGUAGE
+    language: DEFAULT_LANGUAGE,
+    showToast: DEFAULT_SHOW_TOAST,
+    showBreakdown: DEFAULT_SHOW_BREAKDOWN
   };
   async function getSettings() {
     const stored = await import_webextension_polyfill2.default.storage.sync.get(
@@ -1889,7 +1945,9 @@
       options: { ...defaultOptions, ...stored.options },
       whitelist: stored.whitelist ?? DEFAULT_WHITELIST,
       theme: stored.theme ?? DEFAULT_THEME,
-      language: stored.language ?? DEFAULT_LANGUAGE
+      language: stored.language ?? DEFAULT_LANGUAGE,
+      showToast: stored.showToast ?? DEFAULT_SHOW_TOAST,
+      showBreakdown: stored.showBreakdown ?? DEFAULT_SHOW_BREAKDOWN
     };
   }
   async function saveSettings(settings) {
@@ -1917,6 +1975,8 @@
   var dashModeSelect = document.getElementById("dashMode");
   var themeSelect = document.getElementById("theme");
   var languageSelect = document.getElementById("language");
+  var showToastCheckbox = document.getElementById("showToast");
+  var showBreakdownCheckbox = document.getElementById("showBreakdown");
   var whitelistEl = document.getElementById("whitelist");
   var newDomainInput = document.getElementById("new-domain");
   var addDomainButton = document.getElementById("add-domain");
@@ -1924,6 +1984,8 @@
   var whitelist = [...DEFAULT_WHITELIST];
   var theme = DEFAULT_THEME;
   var language = "auto";
+  var showToast = DEFAULT_SHOW_TOAST;
+  var showBreakdown = DEFAULT_SHOW_BREAKDOWN;
   var activeLanguage = resolveLanguage(language);
   localizeDocument(activeLanguage);
   function checkbox(id) {
@@ -1960,20 +2022,26 @@
     languageSelect.value = language;
     localizeDocument(activeLanguage);
     languageSelect.addEventListener("change", onLanguageChange);
+    showToast = settings.showToast;
+    showToastCheckbox.checked = showToast;
+    showToastCheckbox.addEventListener("change", onNotificationSettingsChange);
+    showBreakdown = settings.showBreakdown;
+    showBreakdownCheckbox.checked = showBreakdown;
+    showBreakdownCheckbox.addEventListener("change", onNotificationSettingsChange);
     whitelist = [...settings.whitelist];
     renderWhitelist();
   }
   async function onOptionsChange() {
     const settings = await getSettings();
     const options = readOptionsFromForm(settings.options);
-    await saveSettings({ options, whitelist, theme, language });
+    await saveSettings({ options, whitelist, theme, language, showToast, showBreakdown });
     showStatus(getMessage(activeLanguage, "savedStatus"));
   }
   async function onThemeChange() {
     theme = themeSelect.value;
     applyTheme(theme);
     const settings = await getSettings();
-    await saveSettings({ options: settings.options, whitelist, theme, language });
+    await saveSettings({ options: settings.options, whitelist, theme, language, showToast, showBreakdown });
     showStatus(getMessage(activeLanguage, "savedStatus"));
   }
   async function onLanguageChange() {
@@ -1983,7 +2051,14 @@
     languageSelect.value = language;
     renderWhitelist();
     const settings = await getSettings();
-    await saveSettings({ options: settings.options, whitelist, theme, language });
+    await saveSettings({ options: settings.options, whitelist, theme, language, showToast, showBreakdown });
+    showStatus(getMessage(activeLanguage, "savedStatus"));
+  }
+  async function onNotificationSettingsChange() {
+    showToast = showToastCheckbox.checked;
+    showBreakdown = showBreakdownCheckbox.checked;
+    const settings = await getSettings();
+    await saveSettings({ options: settings.options, whitelist, theme, language, showToast, showBreakdown });
     showStatus(getMessage(activeLanguage, "savedStatus"));
   }
   function renderWhitelist() {
@@ -2002,7 +2077,7 @@
   async function removeDomain(domain) {
     whitelist = whitelist.filter((d) => d !== domain);
     const settings = await getSettings();
-    await saveSettings({ options: settings.options, whitelist, theme, language });
+    await saveSettings({ options: settings.options, whitelist, theme, language, showToast, showBreakdown });
     renderWhitelist();
     showStatus(getMessage(activeLanguage, "savedStatus"));
   }
@@ -2023,7 +2098,7 @@
     }
     whitelist = [...whitelist, domain];
     const settings = await getSettings();
-    await saveSettings({ options: settings.options, whitelist, theme, language });
+    await saveSettings({ options: settings.options, whitelist, theme, language, showToast, showBreakdown });
     newDomainInput.value = "";
     renderWhitelist();
     showStatus(getMessage(activeLanguage, "domainAddedStatus"));

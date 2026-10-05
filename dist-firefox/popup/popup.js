@@ -1022,45 +1022,90 @@
   // src/core/rules.ts
   var DOUBLE_QUOTES = /[\u201C\u201D\u201E\u00AB\u00BB]/g;
   var SINGLE_QUOTES = /[\u2018\u2019\u201A\u2039\u203A]/g;
-  function replaceQuotes(text) {
-    return text.replace(DOUBLE_QUOTES, '"').replace(SINGLE_QUOTES, "'");
+  function replaceQuotes(text, onReplace) {
+    return text.replace(DOUBLE_QUOTES, (match) => {
+      onReplace?.(match);
+      return '"';
+    }).replace(SINGLE_QUOTES, (match) => {
+      onReplace?.(match);
+      return "'";
+    });
   }
   var DASH_RUN = /\s*[\u2013\u2014]\s*/g;
-  function replaceDashes(text, mode) {
+  function replaceDashes(text, mode, onReplace) {
     return text.replace(DASH_RUN, (match, offset) => {
       const before = text.slice(0, offset).match(/(\S)\s*$/)?.[1] ?? "";
       const after = text.slice(offset + match.length).match(/^\s*(\S)/)?.[1] ?? "";
       const isDigitRange = /\d/.test(before) && /\d/.test(after);
+      for (const character of match) {
+        if (character === "\u2013" || character === "\u2014") onReplace?.(character);
+      }
       return isDigitRange ? "-" : mode;
     });
   }
-  function replaceEllipsis(text) {
-    return text.replace(/\u2026/g, "...");
+  function replaceEllipsis(text, onReplace) {
+    return text.replace(/\u2026/g, (match) => {
+      onReplace?.(match);
+      return "...";
+    });
   }
   var SPECIAL_SPACES = /[\u00A0\u2002-\u200A\u202F\u205F\u3000]/g;
-  function replaceSpecialSpaces(text) {
-    return text.replace(SPECIAL_SPACES, " ");
+  function replaceSpecialSpaces(text, onReplace) {
+    return text.replace(SPECIAL_SPACES, (match) => {
+      onReplace?.(match);
+      return " ";
+    });
   }
   var INVISIBLES = /[\u200B\u2060\uFEFF\u00AD\u200E\u200F]/g;
-  function removeInvisibles(text) {
-    return text.replace(INVISIBLES, "");
+  function removeInvisibles(text, onReplace) {
+    return text.replace(INVISIBLES, (match) => {
+      onReplace?.(match);
+      return "";
+    });
   }
   var MULTIPLICATION_TIGHT = /(?<=[\p{L}\p{N}])\u00D7(?=[\p{L}\p{N}])/gu;
-  function replaceMisc(text) {
-    return text.replace(/[\u2212\u2011]/g, "-").replace(/\u2022/g, "-").replace(/\u2192/g, "->").replace(/\u2190/g, "<-").replace(MULTIPLICATION_TIGHT, "x").replace(/\u2032/g, "'").replace(/\u2033/g, '"');
+  function replaceMisc(text, onReplace) {
+    return text.replace(/[\u2212\u2011]/g, (match) => {
+      onReplace?.(match);
+      return "-";
+    }).replace(/\u2022/g, (match) => {
+      onReplace?.(match);
+      return "-";
+    }).replace(/\u2192/g, (match) => {
+      onReplace?.(match);
+      return "->";
+    }).replace(/\u2190/g, (match) => {
+      onReplace?.(match);
+      return "<-";
+    }).replace(MULTIPLICATION_TIGHT, (match) => {
+      onReplace?.(match);
+      return "x";
+    }).replace(/\u2032/g, (match) => {
+      onReplace?.(match);
+      return "'";
+    }).replace(/\u2033/g, (match) => {
+      onReplace?.(match);
+      return '"';
+    });
   }
   var EMOJI = new RegExp("\\p{Extended_Pictographic}(?:[\\u{1F3FB}-\\u{1F3FF}]|\\uFE0F|\\u200D\\p{Extended_Pictographic})*|[\\u{1F1E6}-\\u{1F1FF}]{2}|[0-9#*]\\uFE0F?\\u20E3", "gu");
-  function removeEmojis(text) {
-    return text.replace(EMOJI, "");
+  function removeEmojis(text, onReplace) {
+    return text.replace(EMOJI, (match) => {
+      onReplace?.(match);
+      return "";
+    });
   }
   var LINE_SPLIT = /(\r\n|\n)/;
-  function collapseSpaces(text) {
+  function collapseSpaces(text, onReplace) {
     return text.split(LINE_SPLIT).map((part) => {
       if (part === "\n" || part === "\r\n") return part;
       const m = part.match(/^([ \t]*)([\s\S]*)$/);
       const indent = m?.[1] ?? "";
       const rest = m?.[2] ?? "";
-      return indent + rest.replace(/ {2,}/g, " ");
+      return indent + rest.replace(/ {2,}/g, (match) => {
+        onReplace?.(match.slice(1));
+        return " ";
+      });
     }).join("");
   }
   var PROTECTED_PATTERN = /(https?:\/\/[^\s<>"')\]]+|www\.[^\s<>"')\]]+|[\w.+-]+@[\w-]+\.[\w.-]+)/g;
@@ -1093,22 +1138,42 @@
     emojis: false,
     collapseSpaces: true
   };
+  function createEmptyStats() {
+    return {
+      total: 0,
+      byGroup: {
+        quotes: 0,
+        dashes: 0,
+        ellipsis: 0,
+        spaces: 0,
+        invisibles: 0,
+        other: 0
+      }
+    };
+  }
   function normalize(text, opts = defaultOptions) {
+    const stats = createEmptyStats();
+    const count = (group) => (removed) => {
+      for (const _character of removed) {
+        stats.byGroup[group] += 1;
+        stats.total += 1;
+      }
+    };
     const segments = splitProtectedSegments(text);
     const processed = segments.map((segment) => {
       if (segment.protected) return segment.value;
       let value = segment.value;
-      if (opts.quotes) value = replaceQuotes(value);
-      if (opts.dashes) value = replaceDashes(value, opts.dashMode);
-      if (opts.ellipsis) value = replaceEllipsis(value);
-      if (opts.spaces) value = replaceSpecialSpaces(value);
-      if (opts.invisibles) value = removeInvisibles(value);
-      if (opts.misc) value = replaceMisc(value);
-      if (opts.emojis) value = removeEmojis(value);
-      if (opts.collapseSpaces) value = collapseSpaces(value);
+      if (opts.quotes) value = replaceQuotes(value, count("quotes"));
+      if (opts.dashes) value = replaceDashes(value, opts.dashMode, count("dashes"));
+      if (opts.ellipsis) value = replaceEllipsis(value, count("ellipsis"));
+      if (opts.spaces) value = replaceSpecialSpaces(value, count("spaces"));
+      if (opts.invisibles) value = removeInvisibles(value, count("invisibles"));
+      if (opts.misc) value = replaceMisc(value, count("other"));
+      if (opts.emojis) value = removeEmojis(value, count("other"));
+      if (opts.collapseSpaces) value = collapseSpaces(value, count("other"));
       return value;
     }).join("");
-    return processed;
+    return { text: processed, stats };
   }
 
   // src/shared/i18n.ts
@@ -1199,7 +1264,32 @@
     permissionDeniedStatus: { message: "Permission was not granted" },
     domainAddedStatus: { message: "Domain added" },
     contextCleanSelection: { message: "Clean selected text" },
-    contextPasteCleaned: { message: "Paste cleaned text" }
+    contextPasteCleaned: { message: "Paste cleaned text" },
+    notificationsHeading: { message: "Notifications" },
+    showToastLabel: { message: "Show notification" },
+    showBreakdownLabel: { message: "Show breakdown by group" },
+    toastTitle: { message: "Copied cleaned: replaced {count} {unit}" },
+    toastUnitCharacterOne: { message: "character" },
+    toastUnitCharacterFew: { message: "characters" },
+    toastUnitCharacterMany: { message: "characters" },
+    toastUnitQuotesOne: { message: "quote" },
+    toastUnitQuotesFew: { message: "quotes" },
+    toastUnitQuotesMany: { message: "quotes" },
+    toastUnitDashesOne: { message: "dash" },
+    toastUnitDashesFew: { message: "dashes" },
+    toastUnitDashesMany: { message: "dashes" },
+    toastUnitEllipsisOne: { message: "ellipsis" },
+    toastUnitEllipsisFew: { message: "ellipses" },
+    toastUnitEllipsisMany: { message: "ellipses" },
+    toastUnitSpacesOne: { message: "special space" },
+    toastUnitSpacesFew: { message: "special spaces" },
+    toastUnitSpacesMany: { message: "special spaces" },
+    toastUnitInvisiblesOne: { message: "invisible character" },
+    toastUnitInvisiblesFew: { message: "invisible characters" },
+    toastUnitInvisiblesMany: { message: "invisible characters" },
+    toastUnitOtherOne: { message: "other character" },
+    toastUnitOtherFew: { message: "other characters" },
+    toastUnitOtherMany: { message: "other characters" }
   };
 
   // _locales/es/messages.json
@@ -1727,7 +1817,32 @@
     permissionDeniedStatus: { message: "\u0414\u043E\u0441\u0442\u0443\u043F \u043D\u0435 \u043F\u0440\u0435\u0434\u043E\u0441\u0442\u0430\u0432\u043B\u0435\u043D" },
     domainAddedStatus: { message: "\u0414\u043E\u043C\u0435\u043D \u0434\u043E\u0431\u0430\u0432\u043B\u0435\u043D" },
     contextCleanSelection: { message: "\u041E\u0447\u0438\u0441\u0442\u0438\u0442\u044C \u0432\u044B\u0434\u0435\u043B\u0435\u043D\u043D\u044B\u0439 \u0442\u0435\u043A\u0441\u0442" },
-    contextPasteCleaned: { message: "\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u044C \u043E\u0447\u0438\u0449\u0435\u043D\u043D\u044B\u0439 \u0442\u0435\u043A\u0441\u0442" }
+    contextPasteCleaned: { message: "\u0412\u0441\u0442\u0430\u0432\u0438\u0442\u044C \u043E\u0447\u0438\u0449\u0435\u043D\u043D\u044B\u0439 \u0442\u0435\u043A\u0441\u0442" },
+    notificationsHeading: { message: "\u0423\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F" },
+    showToastLabel: { message: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0442\u044C \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u0435" },
+    showBreakdownLabel: { message: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0442\u044C \u0440\u0430\u0437\u0431\u0438\u0432\u043A\u0443 \u043F\u043E \u0433\u0440\u0443\u043F\u043F\u0430\u043C" },
+    toastTitle: { message: "\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E \u043E\u0447\u0438\u0449\u0435\u043D\u043D\u044B\u043C: \u0437\u0430\u043C\u0435\u043D\u0435\u043D\u043E {count} {unit}" },
+    toastUnitCharacterOne: { message: "\u0441\u0438\u043C\u0432\u043E\u043B" },
+    toastUnitCharacterFew: { message: "\u0441\u0438\u043C\u0432\u043E\u043B\u0430" },
+    toastUnitCharacterMany: { message: "\u0441\u0438\u043C\u0432\u043E\u043B\u043E\u0432" },
+    toastUnitQuotesOne: { message: "\u043A\u0430\u0432\u044B\u0447\u043A\u0430" },
+    toastUnitQuotesFew: { message: "\u043A\u0430\u0432\u044B\u0447\u043A\u0438" },
+    toastUnitQuotesMany: { message: "\u043A\u0430\u0432\u044B\u0447\u0435\u043A" },
+    toastUnitDashesOne: { message: "\u0442\u0438\u0440\u0435" },
+    toastUnitDashesFew: { message: "\u0442\u0438\u0440\u0435" },
+    toastUnitDashesMany: { message: "\u0442\u0438\u0440\u0435" },
+    toastUnitEllipsisOne: { message: "\u043C\u043D\u043E\u0433\u043E\u0442\u043E\u0447\u0438\u0435" },
+    toastUnitEllipsisFew: { message: "\u043C\u043D\u043E\u0433\u043E\u0442\u043E\u0447\u0438\u044F" },
+    toastUnitEllipsisMany: { message: "\u043C\u043D\u043E\u0433\u043E\u0442\u043E\u0447\u0438\u0439" },
+    toastUnitSpacesOne: { message: "\u0441\u043F\u0435\u0446\u043F\u0440\u043E\u0431\u0435\u043B" },
+    toastUnitSpacesFew: { message: "\u0441\u043F\u0435\u0446\u043F\u0440\u043E\u0431\u0435\u043B\u0430" },
+    toastUnitSpacesMany: { message: "\u0441\u043F\u0435\u0446\u043F\u0440\u043E\u0431\u0435\u043B\u043E\u0432" },
+    toastUnitInvisiblesOne: { message: "\u043D\u0435\u0432\u0438\u0434\u0438\u043C\u044B\u0439 \u0441\u0438\u043C\u0432\u043E\u043B" },
+    toastUnitInvisiblesFew: { message: "\u043D\u0435\u0432\u0438\u0434\u0438\u043C\u044B\u0445 \u0441\u0438\u043C\u0432\u043E\u043B\u0430" },
+    toastUnitInvisiblesMany: { message: "\u043D\u0435\u0432\u0438\u0434\u0438\u043C\u044B\u0445 \u0441\u0438\u043C\u0432\u043E\u043B\u043E\u0432" },
+    toastUnitOtherOne: { message: "\u043F\u0440\u043E\u0447\u0438\u0439 \u0441\u0438\u043C\u0432\u043E\u043B" },
+    toastUnitOtherFew: { message: "\u043F\u0440\u043E\u0447\u0438\u0445 \u0441\u0438\u043C\u0432\u043E\u043B\u0430" },
+    toastUnitOtherMany: { message: "\u043F\u0440\u043E\u0447\u0438\u0445 \u0441\u0438\u043C\u0432\u043E\u043B\u043E\u0432" }
   };
 
   // _locales/uk/messages.json
@@ -1922,8 +2037,10 @@
     if (setting === "auto") return normalizeBrowserLanguage(import_webextension_polyfill.default.i18n.getUILanguage());
     return setting;
   }
-  function getMessage(language, key) {
-    return CATALOGS[language]?.[key]?.message ?? CATALOGS.en[key]?.message ?? key;
+  function getMessage(language, key, substitutions) {
+    const raw = CATALOGS[language]?.[key]?.message ?? CATALOGS.en[key]?.message ?? key;
+    if (!substitutions) return raw;
+    return raw.replace(/\{(\w+)\}/g, (match, token) => substitutions[token] ?? match);
   }
   function localizeDocument(language) {
     document.documentElement.lang = language.replace("_", "-");
@@ -1951,11 +2068,15 @@
 
   // src/shared/settings.ts
   var DEFAULT_WHITELIST = ["chatgpt.com", "claude.ai", "gemini.google.com"];
+  var DEFAULT_SHOW_TOAST = true;
+  var DEFAULT_SHOW_BREAKDOWN = true;
   var defaultSettings = {
     options: defaultOptions,
     whitelist: DEFAULT_WHITELIST,
     theme: DEFAULT_THEME,
-    language: DEFAULT_LANGUAGE
+    language: DEFAULT_LANGUAGE,
+    showToast: DEFAULT_SHOW_TOAST,
+    showBreakdown: DEFAULT_SHOW_BREAKDOWN
   };
   async function getSettings() {
     const stored = await import_webextension_polyfill2.default.storage.sync.get(
@@ -1965,7 +2086,9 @@
       options: { ...defaultOptions, ...stored.options },
       whitelist: stored.whitelist ?? DEFAULT_WHITELIST,
       theme: stored.theme ?? DEFAULT_THEME,
-      language: stored.language ?? DEFAULT_LANGUAGE
+      language: stored.language ?? DEFAULT_LANGUAGE,
+      showToast: stored.showToast ?? DEFAULT_SHOW_TOAST,
+      showBreakdown: stored.showBreakdown ?? DEFAULT_SHOW_BREAKDOWN
     };
   }
 
@@ -1989,7 +2112,7 @@
   });
   cleanButton.addEventListener("click", async () => {
     const settings = await getSettings();
-    output.value = normalize(input.value, settings.options);
+    output.value = normalize(input.value, settings.options).text;
     copyButton.disabled = output.value.length === 0;
     status.textContent = "";
   });

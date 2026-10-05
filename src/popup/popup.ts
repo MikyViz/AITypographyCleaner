@@ -29,7 +29,7 @@ openOptions.addEventListener('click', (event) => {
 
 cleanButton.addEventListener('click', async () => {
   const settings = await getSettings();
-  output.value = normalize(input.value, settings.options);
+  output.value = normalize(input.value, settings.options).text;
   copyButton.disabled = output.value.length === 0;
   status.textContent = '';
 });

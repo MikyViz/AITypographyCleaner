@@ -8,6 +8,8 @@ import {
   type SupportedLanguage,
 } from '../shared/i18n';
 import {
+  DEFAULT_SHOW_BREAKDOWN,
+  DEFAULT_SHOW_TOAST,
   DEFAULT_WHITELIST,
   domainToOriginPattern,
   getSettings,
@@ -30,6 +32,8 @@ const checkboxIds = [
 const dashModeSelect = document.getElementById('dashMode') as HTMLSelectElement;
 const themeSelect = document.getElementById('theme') as HTMLSelectElement;
 const languageSelect = document.getElementById('language') as HTMLSelectElement;
+const showToastCheckbox = document.getElementById('showToast') as HTMLInputElement;
+const showBreakdownCheckbox = document.getElementById('showBreakdown') as HTMLInputElement;
 const whitelistEl = document.getElementById('whitelist') as HTMLUListElement;
 const newDomainInput = document.getElementById('new-domain') as HTMLInputElement;
 const addDomainButton = document.getElementById('add-domain') as HTMLButtonElement;
@@ -38,6 +42,8 @@ const statusEl = document.getElementById('status') as HTMLParagraphElement;
 let whitelist: string[] = [...DEFAULT_WHITELIST];
 let theme: Theme = DEFAULT_THEME;
 let language: LanguageSetting = 'auto';
+let showToast: boolean = DEFAULT_SHOW_TOAST;
+let showBreakdown: boolean = DEFAULT_SHOW_BREAKDOWN;
 let activeLanguage: SupportedLanguage = resolveLanguage(language);
 
 // Локализуем сразу по языку браузера, чтобы избежать пустых подписей до загрузки настроек;
@@ -84,6 +90,14 @@ async function load(): Promise<void> {
   localizeDocument(activeLanguage);
   languageSelect.addEventListener('change', onLanguageChange);
 
+  showToast = settings.showToast;
+  showToastCheckbox.checked = showToast;
+  showToastCheckbox.addEventListener('change', onNotificationSettingsChange);
+
+  showBreakdown = settings.showBreakdown;
+  showBreakdownCheckbox.checked = showBreakdown;
+  showBreakdownCheckbox.addEventListener('change', onNotificationSettingsChange);
+
   whitelist = [...settings.whitelist];
   renderWhitelist();
 }
@@ -91,7 +105,7 @@ async function load(): Promise<void> {
 async function onOptionsChange(): Promise<void> {
   const settings = await getSettings();
   const options = readOptionsFromForm(settings.options);
-  await saveSettings({ options, whitelist, theme, language });
+  await saveSettings({ options, whitelist, theme, language, showToast, showBreakdown });
   showStatus(getMessage(activeLanguage, 'savedStatus'));
 }
 
@@ -99,7 +113,7 @@ async function onThemeChange(): Promise<void> {
   theme = themeSelect.value as Theme;
   applyTheme(theme);
   const settings = await getSettings();
-  await saveSettings({ options: settings.options, whitelist, theme, language });
+  await saveSettings({ options: settings.options, whitelist, theme, language, showToast, showBreakdown });
   showStatus(getMessage(activeLanguage, 'savedStatus'));
 }
 
@@ -110,7 +124,15 @@ async function onLanguageChange(): Promise<void> {
   languageSelect.value = language;
   renderWhitelist();
   const settings = await getSettings();
-  await saveSettings({ options: settings.options, whitelist, theme, language });
+  await saveSettings({ options: settings.options, whitelist, theme, language, showToast, showBreakdown });
+  showStatus(getMessage(activeLanguage, 'savedStatus'));
+}
+
+async function onNotificationSettingsChange(): Promise<void> {
+  showToast = showToastCheckbox.checked;
+  showBreakdown = showBreakdownCheckbox.checked;
+  const settings = await getSettings();
+  await saveSettings({ options: settings.options, whitelist, theme, language, showToast, showBreakdown });
   showStatus(getMessage(activeLanguage, 'savedStatus'));
 }
 
@@ -131,7 +153,7 @@ function renderWhitelist(): void {
 async function removeDomain(domain: string): Promise<void> {
   whitelist = whitelist.filter((d) => d !== domain);
   const settings = await getSettings();
-  await saveSettings({ options: settings.options, whitelist, theme, language });
+  await saveSettings({ options: settings.options, whitelist, theme, language, showToast, showBreakdown });
   renderWhitelist();
   showStatus(getMessage(activeLanguage, 'savedStatus'));
 }
@@ -155,7 +177,7 @@ addDomainButton.addEventListener('click', async () => {
 
   whitelist = [...whitelist, domain];
   const settings = await getSettings();
-  await saveSettings({ options: settings.options, whitelist, theme, language });
+  await saveSettings({ options: settings.options, whitelist, theme, language, showToast, showBreakdown });
   newDomainInput.value = '';
   renderWhitelist();
   showStatus(getMessage(activeLanguage, 'domainAddedStatus'));

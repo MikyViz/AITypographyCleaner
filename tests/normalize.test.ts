@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { defaultOptions, normalize, type Options } from '../src/core/normalize';
+import {
+  createEmptyStats,
+  defaultOptions,
+  mergeStats,
+  normalize as normalizeWithStats,
+  type Options,
+} from '../src/core/normalize';
 
 const opts = (overrides: Partial<Options> = {}): Options => ({ ...defaultOptions, ...overrides });
+const normalize = (text: string, options?: Options): string => normalizeWithStats(text, options).text;
 
 describe('quotes', () => {
   it('replaces curly double quotes and guillemets with "', () => {
@@ -188,5 +195,93 @@ describe('normalize with all rules combined', () => {
     const expected =
       '"Hello" - this costs 5-10 dollars... It\'s great - really great.';
     expect(normalize(input, opts())).toBe(expected);
+  });
+});
+
+describe('normalization statistics', () => {
+  it('counts every replaced quote', () => {
+    expect(normalizeWithStats('\u201Chello\u201D it\u2019s', opts()).stats).toEqual({
+      total: 3,
+      byGroup: { quotes: 3, dashes: 0, ellipsis: 0, spaces: 0, invisibles: 0, other: 0 },
+    });
+  });
+
+  it('counts dash characters but not surrounding whitespace', () => {
+    expect(normalizeWithStats('a\u2014b 5\u201310', opts()).stats.byGroup.dashes).toBe(2);
+  });
+
+  it('counts each ellipsis character, not the output dots', () => {
+    expect(normalizeWithStats('\u2026\u2026', opts()).stats.byGroup.ellipsis).toBe(2);
+  });
+
+  it('counts each special space', () => {
+    expect(normalizeWithStats('a\u00A0b\u2009c', opts()).stats.byGroup.spaces).toBe(2);
+  });
+
+  it('counts each removed invisible character', () => {
+    expect(normalizeWithStats('a\u200Bb\u2060c', opts()).stats.byGroup.invisibles).toBe(2);
+  });
+
+  it('counts replacements from other rules', () => {
+    expect(normalizeWithStats('\u2022 \u2192 1920\u00D71080', opts()).stats.byGroup.other).toBe(3);
+  });
+
+  it('counts mixed replacements across groups', () => {
+    const result = normalizeWithStats('\u201CHi\u201D\u2014wait\u2026\u00A0\u200B\u2022', opts());
+    expect(result).toEqual({
+      text: '"Hi" - wait... -',
+      stats: {
+        total: 7,
+        byGroup: { quotes: 2, dashes: 1, ellipsis: 1, spaces: 1, invisibles: 1, other: 1 },
+      },
+    });
+  });
+
+  it('returns zero statistics when no rule replaces anything', () => {
+    expect(normalizeWithStats('plain text', opts()).stats).toEqual({
+      total: 0,
+      byGroup: { quotes: 0, dashes: 0, ellipsis: 0, spaces: 0, invisibles: 0, other: 0 },
+    });
+  });
+
+  it('does not count disabled groups', () => {
+    const result = normalizeWithStats('\u201C\u2014\u2026\u00A0\u200B\u2022', opts({
+      quotes: false,
+      dashes: false,
+      ellipsis: false,
+      spaces: false,
+      invisibles: false,
+      misc: false,
+    }));
+    expect(result.text).toBe('\u201C\u2014\u2026\u00A0\u200B\u2022');
+    expect(result.stats.total).toBe(0);
+    expect(Object.values(result.stats.byGroup)).toEqual([0, 0, 0, 0, 0, 0]);
+  });
+
+  it('counts collapsed spaces as other changes', () => {
+    expect(normalizeWithStats('a   b', opts()).stats.byGroup.other).toBe(2);
+  });
+});
+
+describe('createEmptyStats / mergeStats', () => {
+  it('createEmptyStats returns all-zero counters', () => {
+    expect(createEmptyStats()).toEqual({
+      total: 0,
+      byGroup: { quotes: 0, dashes: 0, ellipsis: 0, spaces: 0, invisibles: 0, other: 0 },
+    });
+  });
+
+  it('mergeStats sums totals and every group (used to aggregate across text nodes)', () => {
+    const a = normalizeWithStats('\u201Chi\u201D', opts()).stats;
+    const b = normalizeWithStats('wait\u2026', opts()).stats;
+    expect(mergeStats(a, b)).toEqual({
+      total: 3,
+      byGroup: { quotes: 2, dashes: 0, ellipsis: 1, spaces: 0, invisibles: 0, other: 0 },
+    });
+  });
+
+  it('mergeStats with an empty stats object returns the other operand unchanged', () => {
+    const a = normalizeWithStats('\u201Chi\u201D it\u2019s', opts()).stats;
+    expect(mergeStats(a, createEmptyStats())).toEqual(a);
   });
 });

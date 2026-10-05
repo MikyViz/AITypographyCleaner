@@ -4,14 +4,23 @@
  */
 
 export type DashMode = ' - ' | '-' | ', ';
+type OnReplace = (removed: string) => void;
 
 /** Кавычки-«ёлочки», немецкие „ “, английские “ ” и угловые « » → прямая ". */
 const DOUBLE_QUOTES = /[\u201C\u201D\u201E\u00AB\u00BB]/g;
 /** Одиночные ‘ ’ ‚ и одиночные угловые ‹ › → прямая '. */
 const SINGLE_QUOTES = /[\u2018\u2019\u201A\u2039\u203A]/g;
 
-export function replaceQuotes(text: string): string {
-  return text.replace(DOUBLE_QUOTES, '"').replace(SINGLE_QUOTES, "'");
+export function replaceQuotes(text: string, onReplace?: OnReplace): string {
+  return text
+    .replace(DOUBLE_QUOTES, (match) => {
+      onReplace?.(match);
+      return '"';
+    })
+    .replace(SINGLE_QUOTES, (match) => {
+      onReplace?.(match);
+      return "'";
+    });
 }
 
 const DASH_RUN = /\s*[\u2013\u2014]\s*/g;
@@ -20,24 +29,33 @@ const DASH_RUN = /\s*[\u2013\u2014]\s*/g;
  * Тире между цифрами (диапазоны вида 5–10) всегда схлопывается в голый "-".
  * Тире между словами заменяется на настраиваемый режим (" - " / "-" / ", ").
  */
-export function replaceDashes(text: string, mode: DashMode): string {
+export function replaceDashes(text: string, mode: DashMode, onReplace?: OnReplace): string {
   return text.replace(DASH_RUN, (match, offset: number) => {
     const before = text.slice(0, offset).match(/(\S)\s*$/)?.[1] ?? '';
     const after = text.slice(offset + match.length).match(/^\s*(\S)/)?.[1] ?? '';
     const isDigitRange = /\d/.test(before) && /\d/.test(after);
+    for (const character of match) {
+      if (character === '\u2013' || character === '\u2014') onReplace?.(character);
+    }
     return isDigitRange ? '-' : mode;
   });
 }
 
-export function replaceEllipsis(text: string): string {
-  return text.replace(/\u2026/g, '...');
+export function replaceEllipsis(text: string, onReplace?: OnReplace): string {
+  return text.replace(/\u2026/g, (match) => {
+    onReplace?.(match);
+    return '...';
+  });
 }
 
 /** U+00A0, U+2002..U+200A, U+202F, U+205F, U+3000 → обычный пробел. */
 const SPECIAL_SPACES = /[\u00A0\u2002-\u200A\u202F\u205F\u3000]/g;
 
-export function replaceSpecialSpaces(text: string): string {
-  return text.replace(SPECIAL_SPACES, ' ');
+export function replaceSpecialSpaces(text: string, onReplace?: OnReplace): string {
+  return text.replace(SPECIAL_SPACES, (match) => {
+    onReplace?.(match);
+    return ' ';
+  });
 }
 
 /**
@@ -47,22 +65,25 @@ export function replaceSpecialSpaces(text: string): string {
  */
 const INVISIBLES = /[\u200B\u2060\uFEFF\u00AD\u200E\u200F]/g;
 
-export function removeInvisibles(text: string): string {
-  return text.replace(INVISIBLES, '');
+export function removeInvisibles(text: string, onReplace?: OnReplace): string {
+  return text.replace(INVISIBLES, (match) => {
+    onReplace?.(match);
+    return '';
+  });
 }
 
 /** × заменяется на x только когда вплотную примыкает к букве/цифре с обеих сторон (не в формулах с пробелами). */
 const MULTIPLICATION_TIGHT = /(?<=[\p{L}\p{N}])\u00D7(?=[\p{L}\p{N}])/gu;
 
-export function replaceMisc(text: string): string {
+export function replaceMisc(text: string, onReplace?: OnReplace): string {
   return text
-    .replace(/[\u2212\u2011]/g, '-') // минус (U+2212), неразрывный дефис (U+2011)
-    .replace(/\u2022/g, '-') // буллет •
-    .replace(/\u2192/g, '->') // →
-    .replace(/\u2190/g, '<-') // ←
-    .replace(MULTIPLICATION_TIGHT, 'x') // ×
-    .replace(/\u2032/g, "'") // прайм ′
-    .replace(/\u2033/g, '"'); // двойной прайм ″
+    .replace(/[\u2212\u2011]/g, (match) => { onReplace?.(match); return '-'; }) // минус (U+2212), неразрывный дефис (U+2011)
+    .replace(/\u2022/g, (match) => { onReplace?.(match); return '-'; }) // буллет •
+    .replace(/\u2192/g, (match) => { onReplace?.(match); return '->'; }) // →
+    .replace(/\u2190/g, (match) => { onReplace?.(match); return '<-'; }) // ←
+    .replace(MULTIPLICATION_TIGHT, (match) => { onReplace?.(match); return 'x'; }) // ×
+    .replace(/\u2032/g, (match) => { onReplace?.(match); return "'"; }) // прайм ′
+    .replace(/\u2033/g, (match) => { onReplace?.(match); return '"'; }); // двойной прайм ″
 }
 
 /**
@@ -74,8 +95,11 @@ export function replaceMisc(text: string): string {
 const EMOJI =
   /\p{Extended_Pictographic}(?:[\u{1F3FB}-\u{1F3FF}]|\uFE0F|\u200D\p{Extended_Pictographic})*|[\u{1F1E6}-\u{1F1FF}]{2}|[0-9#*]\uFE0F?\u20E3/gu;
 
-export function removeEmojis(text: string): string {
-  return text.replace(EMOJI, '');
+export function removeEmojis(text: string, onReplace?: OnReplace): string {
+  return text.replace(EMOJI, (match) => {
+    onReplace?.(match);
+    return '';
+  });
 }
 
 const LINE_SPLIT = /(\r\n|\n)/;
@@ -84,7 +108,7 @@ const LINE_SPLIT = /(\r\n|\n)/;
  * Схлопывает повторяющиеся пробелы внутри строки, не трогая ведущие отступы
  * (пробелы/табы в начале строки) и переводы строк.
  */
-export function collapseSpaces(text: string): string {
+export function collapseSpaces(text: string, onReplace?: OnReplace): string {
   return text
     .split(LINE_SPLIT)
     .map((part) => {
@@ -92,7 +116,10 @@ export function collapseSpaces(text: string): string {
       const m = part.match(/^([ \t]*)([\s\S]*)$/);
       const indent = m?.[1] ?? '';
       const rest = m?.[2] ?? '';
-      return indent + rest.replace(/ {2,}/g, ' ');
+      return indent + rest.replace(/ {2,}/g, (match) => {
+        onReplace?.(match.slice(1));
+        return ' ';
+      });
     })
     .join('');
 }
