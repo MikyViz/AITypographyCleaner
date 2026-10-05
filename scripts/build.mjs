@@ -31,8 +31,11 @@ async function writeManifest() {
 async function copyStatic() {
   await mkdir(path.join(outdir, 'popup'), { recursive: true });
   await mkdir(path.join(outdir, 'options'), { recursive: true });
+  await mkdir(path.join(outdir, 'icons'), { recursive: true });
   await writeManifest();
   await cp('_locales', path.join(outdir, '_locales'), { recursive: true });
+  await cp('src/assets/48.jpg', path.join(outdir, 'icons/icon-48.jpg'));
+  await cp('src/assets/128.jpg', path.join(outdir, 'icons/icon-128.jpg'));
   await cp('src/popup/popup.html', path.join(outdir, 'popup/popup.html'));
   await cp('src/popup/popup.css', path.join(outdir, 'popup/popup.css'));
   await cp('src/options/options.html', path.join(outdir, 'options/options.html'));

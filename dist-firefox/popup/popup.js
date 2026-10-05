@@ -1063,21 +1063,30 @@
       return "";
     });
   }
-  var MULTIPLICATION_TIGHT = /(?<=[\p{L}\p{N}])\u00D7(?=[\p{L}\p{N}])/gu;
-  function replaceMisc(text, onReplace) {
+  function replaceMinus(text, onReplace) {
     return text.replace(/[\u2212\u2011]/g, (match) => {
       onReplace?.(match);
       return "-";
-    }).replace(/\u2022/g, (match) => {
-      onReplace?.(match);
-      return "-";
-    }).replace(/\u2192/g, (match) => {
+    });
+  }
+  function replaceArrows(text, onReplace) {
+    return text.replace(/\u2192/g, (match) => {
       onReplace?.(match);
       return "->";
     }).replace(/\u2190/g, (match) => {
       onReplace?.(match);
       return "<-";
-    }).replace(MULTIPLICATION_TIGHT, (match) => {
+    });
+  }
+  function replaceBullets(text, onReplace) {
+    return text.replace(/\u2022/g, (match) => {
+      onReplace?.(match);
+      return "-";
+    });
+  }
+  var MULTIPLICATION_TIGHT = new RegExp("(?<=\\p{N})\\u00D7(?=\\p{N})|(?<=\\p{L})\\u00D7(?=\\p{L})", "gu");
+  function replaceSymbols(text, onReplace) {
+    return text.replace(MULTIPLICATION_TIGHT, (match) => {
       onReplace?.(match);
       return "x";
     }).replace(/\u2032/g, (match) => {
@@ -1147,7 +1156,10 @@
         ellipsis: 0,
         spaces: 0,
         invisibles: 0,
-        other: 0
+        minus: 0,
+        arrows: 0,
+        bullets: 0,
+        symbols: 0
       }
     };
   }
@@ -1168,9 +1180,14 @@
       if (opts.ellipsis) value = replaceEllipsis(value, count("ellipsis"));
       if (opts.spaces) value = replaceSpecialSpaces(value, count("spaces"));
       if (opts.invisibles) value = removeInvisibles(value, count("invisibles"));
-      if (opts.misc) value = replaceMisc(value, count("other"));
-      if (opts.emojis) value = removeEmojis(value, count("other"));
-      if (opts.collapseSpaces) value = collapseSpaces(value, count("other"));
+      if (opts.misc) {
+        value = replaceMinus(value, count("minus"));
+        value = replaceArrows(value, count("arrows"));
+        value = replaceBullets(value, count("bullets"));
+        value = replaceSymbols(value, count("symbols"));
+      }
+      if (opts.emojis) value = removeEmojis(value, count("symbols"));
+      if (opts.collapseSpaces) value = collapseSpaces(value, count("spaces"));
       return value;
     }).join("");
     return { text: processed, stats };
@@ -1268,10 +1285,11 @@
     notificationsHeading: { message: "Notifications" },
     showToastLabel: { message: "Show notification" },
     showBreakdownLabel: { message: "Show breakdown by group" },
-    toastTitle: { message: "Copied cleaned: replaced {count} {unit}" },
-    toastUnitCharacterOne: { message: "character" },
-    toastUnitCharacterFew: { message: "characters" },
-    toastUnitCharacterMany: { message: "characters" },
+    toastTitle: { message: "Cleaned: {count} {unit}" },
+    toastAndMore: { message: "and {count} more" },
+    toastUnitCharacterOne: { message: "symbol" },
+    toastUnitCharacterFew: { message: "symbols" },
+    toastUnitCharacterMany: { message: "symbols" },
     toastUnitQuotesOne: { message: "quote" },
     toastUnitQuotesFew: { message: "quotes" },
     toastUnitQuotesMany: { message: "quotes" },
@@ -1287,9 +1305,18 @@
     toastUnitInvisiblesOne: { message: "invisible character" },
     toastUnitInvisiblesFew: { message: "invisible characters" },
     toastUnitInvisiblesMany: { message: "invisible characters" },
-    toastUnitOtherOne: { message: "other character" },
-    toastUnitOtherFew: { message: "other characters" },
-    toastUnitOtherMany: { message: "other characters" }
+    toastUnitMinusOne: { message: "minus sign" },
+    toastUnitMinusFew: { message: "minus signs" },
+    toastUnitMinusMany: { message: "minus signs" },
+    toastUnitArrowsOne: { message: "arrow" },
+    toastUnitArrowsFew: { message: "arrows" },
+    toastUnitArrowsMany: { message: "arrows" },
+    toastUnitBulletsOne: { message: "bullet" },
+    toastUnitBulletsFew: { message: "bullets" },
+    toastUnitBulletsMany: { message: "bullets" },
+    toastUnitSymbolsOne: { message: "sign" },
+    toastUnitSymbolsFew: { message: "signs" },
+    toastUnitSymbolsMany: { message: "signs" }
   };
 
   // _locales/es/messages.json
@@ -1821,7 +1848,8 @@
     notificationsHeading: { message: "\u0423\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u044F" },
     showToastLabel: { message: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0442\u044C \u0443\u0432\u0435\u0434\u043E\u043C\u043B\u0435\u043D\u0438\u0435" },
     showBreakdownLabel: { message: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0442\u044C \u0440\u0430\u0437\u0431\u0438\u0432\u043A\u0443 \u043F\u043E \u0433\u0440\u0443\u043F\u043F\u0430\u043C" },
-    toastTitle: { message: "\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E \u043E\u0447\u0438\u0449\u0435\u043D\u043D\u044B\u043C: \u0437\u0430\u043C\u0435\u043D\u0435\u043D\u043E {count} {unit}" },
+    toastTitle: { message: "\u041E\u0447\u0438\u0449\u0435\u043D\u043E: {count} {unit}" },
+    toastAndMore: { message: "\u0438 \u0435\u0449\u0451 {count}" },
     toastUnitCharacterOne: { message: "\u0441\u0438\u043C\u0432\u043E\u043B" },
     toastUnitCharacterFew: { message: "\u0441\u0438\u043C\u0432\u043E\u043B\u0430" },
     toastUnitCharacterMany: { message: "\u0441\u0438\u043C\u0432\u043E\u043B\u043E\u0432" },
@@ -1840,9 +1868,18 @@
     toastUnitInvisiblesOne: { message: "\u043D\u0435\u0432\u0438\u0434\u0438\u043C\u044B\u0439 \u0441\u0438\u043C\u0432\u043E\u043B" },
     toastUnitInvisiblesFew: { message: "\u043D\u0435\u0432\u0438\u0434\u0438\u043C\u044B\u0445 \u0441\u0438\u043C\u0432\u043E\u043B\u0430" },
     toastUnitInvisiblesMany: { message: "\u043D\u0435\u0432\u0438\u0434\u0438\u043C\u044B\u0445 \u0441\u0438\u043C\u0432\u043E\u043B\u043E\u0432" },
-    toastUnitOtherOne: { message: "\u043F\u0440\u043E\u0447\u0438\u0439 \u0441\u0438\u043C\u0432\u043E\u043B" },
-    toastUnitOtherFew: { message: "\u043F\u0440\u043E\u0447\u0438\u0445 \u0441\u0438\u043C\u0432\u043E\u043B\u0430" },
-    toastUnitOtherMany: { message: "\u043F\u0440\u043E\u0447\u0438\u0445 \u0441\u0438\u043C\u0432\u043E\u043B\u043E\u0432" }
+    toastUnitMinusOne: { message: "\u043C\u0438\u043D\u0443\u0441" },
+    toastUnitMinusFew: { message: "\u043C\u0438\u043D\u0443\u0441\u0430" },
+    toastUnitMinusMany: { message: "\u043C\u0438\u043D\u0443\u0441\u043E\u0432" },
+    toastUnitArrowsOne: { message: "\u0441\u0442\u0440\u0435\u043B\u043A\u0430" },
+    toastUnitArrowsFew: { message: "\u0441\u0442\u0440\u0435\u043B\u043A\u0438" },
+    toastUnitArrowsMany: { message: "\u0441\u0442\u0440\u0435\u043B\u043E\u043A" },
+    toastUnitBulletsOne: { message: "\u043C\u0430\u0440\u043A\u0435\u0440" },
+    toastUnitBulletsFew: { message: "\u043C\u0430\u0440\u043A\u0435\u0440\u0430" },
+    toastUnitBulletsMany: { message: "\u043C\u0430\u0440\u043A\u0435\u0440\u043E\u0432" },
+    toastUnitSymbolsOne: { message: "\u0437\u043D\u0430\u043A" },
+    toastUnitSymbolsFew: { message: "\u0437\u043D\u0430\u043A\u0430" },
+    toastUnitSymbolsMany: { message: "\u0437\u043D\u0430\u043A\u043E\u0432" }
   };
 
   // _locales/uk/messages.json

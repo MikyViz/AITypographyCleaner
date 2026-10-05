@@ -110,9 +110,14 @@ describe('misc', () => {
     expect(normalize('a\u2190b', opts())).toBe('a<-b');
   });
 
-  it('replaces multiplication sign with x only when tight between letters/digits', () => {
+  it('replaces multiplication sign with x only between two digits or two letters', () => {
     expect(normalize('1920\u00D71080', opts())).toBe('1920x1080');
+    expect(normalize('Width\u00D7Height', opts())).toBe('WidthxHeight');
     expect(normalize('2 \u00D7 2', opts())).toBe('2 \u00D7 2');
+  });
+
+  it('does not replace multiplication sign between a digit and a letter (mixed, breaks formulas)', () => {
+    expect(normalize('5\u00D7x', opts())).toBe('5\u00D7x');
   });
 
   it('replaces prime and double prime with straight quotes', () => {
@@ -122,6 +127,16 @@ describe('misc', () => {
 
   it('can be disabled', () => {
     expect(normalize('\u2022 item', opts({ misc: false }))).toBe('\u2022 item');
+  });
+
+  it('replaces a minus sign in a formula and touches nothing else (byGroup.minus only)', () => {
+    const result = normalizeWithStats('Residual = Actual \u2212 Predicted', opts());
+    expect(result.text).toBe('Residual = Actual - Predicted');
+    expect(result.stats.total).toBe(1);
+    expect(result.stats.byGroup.minus).toBe(1);
+    expect(result.stats.byGroup.arrows).toBe(0);
+    expect(result.stats.byGroup.bullets).toBe(0);
+    expect(result.stats.byGroup.symbols).toBe(0);
   });
 });
 
@@ -202,7 +217,10 @@ describe('normalization statistics', () => {
   it('counts every replaced quote', () => {
     expect(normalizeWithStats('\u201Chello\u201D it\u2019s', opts()).stats).toEqual({
       total: 3,
-      byGroup: { quotes: 3, dashes: 0, ellipsis: 0, spaces: 0, invisibles: 0, other: 0 },
+      byGroup: {
+        quotes: 3, dashes: 0, ellipsis: 0, spaces: 0, invisibles: 0,
+        minus: 0, arrows: 0, bullets: 0, symbols: 0,
+      },
     });
   });
 
@@ -222,8 +240,20 @@ describe('normalization statistics', () => {
     expect(normalizeWithStats('a\u200Bb\u2060c', opts()).stats.byGroup.invisibles).toBe(2);
   });
 
-  it('counts replacements from other rules', () => {
-    expect(normalizeWithStats('\u2022 \u2192 1920\u00D71080', opts()).stats.byGroup.other).toBe(3);
+  it('counts minus sign and non-breaking hyphen in the minus group', () => {
+    expect(normalizeWithStats('5\u22123 co\u2011author', opts()).stats.byGroup.minus).toBe(2);
+  });
+
+  it('counts → and ← in the arrows group', () => {
+    expect(normalizeWithStats('a\u2192b\u2190c', opts()).stats.byGroup.arrows).toBe(2);
+  });
+
+  it('counts • in the bullets group', () => {
+    expect(normalizeWithStats('\u2022 one\n\u2022 two', opts()).stats.byGroup.bullets).toBe(2);
+  });
+
+  it('counts ×/primes in the symbols group', () => {
+    expect(normalizeWithStats('1920\u00D71080 5\u2032 5\u2033', opts()).stats.byGroup.symbols).toBe(3);
   });
 
   it('counts mixed replacements across groups', () => {
@@ -232,15 +262,40 @@ describe('normalization statistics', () => {
       text: '"Hi" - wait... -',
       stats: {
         total: 7,
-        byGroup: { quotes: 2, dashes: 1, ellipsis: 1, spaces: 1, invisibles: 1, other: 1 },
+        byGroup: {
+          quotes: 2, dashes: 1, ellipsis: 1, spaces: 1, invisibles: 1,
+          minus: 0, arrows: 0, bullets: 1, symbols: 0,
+        },
       },
+    });
+  });
+
+  it('total always equals the sum of byGroup counters on mixed text', () => {
+    const result = normalizeWithStats(
+      '\u201CHi\u201D\u2014wait\u2026\u00A0\u200B\u2022\u2192\u2212co\u2011op 1920\u00D71080',
+      opts(),
+    );
+    const sum = Object.values(result.stats.byGroup).reduce((total, n) => total + n, 0);
+    expect(result.stats.total).toBe(sum);
+    expect(result.stats.total).toBeGreaterThan(0);
+  });
+
+  it('replaces a minus sign in a formula and touches nothing else', () => {
+    const result = normalizeWithStats('Residual = Actual \u2212 Predicted', opts());
+    expect(result.stats.total).toBe(1);
+    expect(result.stats.byGroup).toEqual({
+      quotes: 0, dashes: 0, ellipsis: 0, spaces: 0, invisibles: 0,
+      minus: 1, arrows: 0, bullets: 0, symbols: 0,
     });
   });
 
   it('returns zero statistics when no rule replaces anything', () => {
     expect(normalizeWithStats('plain text', opts()).stats).toEqual({
       total: 0,
-      byGroup: { quotes: 0, dashes: 0, ellipsis: 0, spaces: 0, invisibles: 0, other: 0 },
+      byGroup: {
+        quotes: 0, dashes: 0, ellipsis: 0, spaces: 0, invisibles: 0,
+        minus: 0, arrows: 0, bullets: 0, symbols: 0,
+      },
     });
   });
 
@@ -255,11 +310,11 @@ describe('normalization statistics', () => {
     }));
     expect(result.text).toBe('\u201C\u2014\u2026\u00A0\u200B\u2022');
     expect(result.stats.total).toBe(0);
-    expect(Object.values(result.stats.byGroup)).toEqual([0, 0, 0, 0, 0, 0]);
+    expect(Object.values(result.stats.byGroup)).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0]);
   });
 
-  it('counts collapsed spaces as other changes', () => {
-    expect(normalizeWithStats('a   b', opts()).stats.byGroup.other).toBe(2);
+  it('counts collapsed extra spaces in the spaces group', () => {
+    expect(normalizeWithStats('a   b', opts()).stats.byGroup.spaces).toBe(2);
   });
 });
 
@@ -267,7 +322,10 @@ describe('createEmptyStats / mergeStats', () => {
   it('createEmptyStats returns all-zero counters', () => {
     expect(createEmptyStats()).toEqual({
       total: 0,
-      byGroup: { quotes: 0, dashes: 0, ellipsis: 0, spaces: 0, invisibles: 0, other: 0 },
+      byGroup: {
+        quotes: 0, dashes: 0, ellipsis: 0, spaces: 0, invisibles: 0,
+        minus: 0, arrows: 0, bullets: 0, symbols: 0,
+      },
     });
   });
 
@@ -276,7 +334,10 @@ describe('createEmptyStats / mergeStats', () => {
     const b = normalizeWithStats('wait\u2026', opts()).stats;
     expect(mergeStats(a, b)).toEqual({
       total: 3,
-      byGroup: { quotes: 2, dashes: 0, ellipsis: 1, spaces: 0, invisibles: 0, other: 0 },
+      byGroup: {
+        quotes: 2, dashes: 0, ellipsis: 1, spaces: 0, invisibles: 0,
+        minus: 0, arrows: 0, bullets: 0, symbols: 0,
+      },
     });
   });
 

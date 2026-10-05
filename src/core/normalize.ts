@@ -3,11 +3,14 @@ import {
   collapseSpaces,
   removeEmojis,
   removeInvisibles,
+  replaceArrows,
+  replaceBullets,
   replaceDashes,
   replaceEllipsis,
-  replaceMisc,
+  replaceMinus,
   replaceQuotes,
   replaceSpecialSpaces,
+  replaceSymbols,
   splitProtectedSegments,
 } from './rules';
 
@@ -31,7 +34,10 @@ export interface Stats {
     ellipsis: number;
     spaces: number;
     invisibles: number;
-    other: number;
+    minus: number;
+    arrows: number;
+    bullets: number;
+    symbols: number;
   };
 }
 
@@ -56,7 +62,10 @@ export function createEmptyStats(): Stats {
       ellipsis: 0,
       spaces: 0,
       invisibles: 0,
-      other: 0,
+      minus: 0,
+      arrows: 0,
+      bullets: 0,
+      symbols: 0,
     },
   };
 }
@@ -71,7 +80,10 @@ export function mergeStats(a: Stats, b: Stats): Stats {
       ellipsis: a.byGroup.ellipsis + b.byGroup.ellipsis,
       spaces: a.byGroup.spaces + b.byGroup.spaces,
       invisibles: a.byGroup.invisibles + b.byGroup.invisibles,
-      other: a.byGroup.other + b.byGroup.other,
+      minus: a.byGroup.minus + b.byGroup.minus,
+      arrows: a.byGroup.arrows + b.byGroup.arrows,
+      bullets: a.byGroup.bullets + b.byGroup.bullets,
+      symbols: a.byGroup.symbols + b.byGroup.symbols,
     },
   };
 }
@@ -101,9 +113,16 @@ export function normalize(text: string, opts: Options = defaultOptions): { text:
       if (opts.ellipsis) value = replaceEllipsis(value, count('ellipsis'));
       if (opts.spaces) value = replaceSpecialSpaces(value, count('spaces'));
       if (opts.invisibles) value = removeInvisibles(value, count('invisibles'));
-      if (opts.misc) value = replaceMisc(value, count('other'));
-      if (opts.emojis) value = removeEmojis(value, count('other'));
-      if (opts.collapseSpaces) value = collapseSpaces(value, count('other'));
+      if (opts.misc) {
+        value = replaceMinus(value, count('minus'));
+        value = replaceArrows(value, count('arrows'));
+        value = replaceBullets(value, count('bullets'));
+        value = replaceSymbols(value, count('symbols'));
+      }
+      // Эмодзи — мелкие символы вне алфавита, относим к той же группе "symbols", что и ×/прайм.
+      if (opts.emojis) value = removeEmojis(value, count('symbols'));
+      // Схлопнутые лишние пробелы — про пробелы, относим к группе "spaces".
+      if (opts.collapseSpaces) value = collapseSpaces(value, count('spaces'));
       return value;
     })
     .join('');

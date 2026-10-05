@@ -36,41 +36,59 @@ describe('plural', () => {
 
 describe('formatToastTitle', () => {
   it('uses correct Russian plural forms for the character count', () => {
-    expect(formatToastTitle('ru', 1)).toBe('Скопировано очищенным: заменено 1 символ');
-    expect(formatToastTitle('ru', 2)).toBe('Скопировано очищенным: заменено 2 символа');
-    expect(formatToastTitle('ru', 5)).toBe('Скопировано очищенным: заменено 5 символов');
-    expect(formatToastTitle('ru', 21)).toBe('Скопировано очищенным: заменено 21 символ');
+    expect(formatToastTitle('ru', 1)).toBe('Очищено: 1 символ');
+    expect(formatToastTitle('ru', 2)).toBe('Очищено: 2 символа');
+    expect(formatToastTitle('ru', 5)).toBe('Очищено: 5 символов');
+    expect(formatToastTitle('ru', 21)).toBe('Очищено: 21 символ');
   });
 
   it('uses English singular/plural for the character count', () => {
-    expect(formatToastTitle('en', 1)).toBe('Copied cleaned: replaced 1 character');
-    expect(formatToastTitle('en', 8)).toBe('Copied cleaned: replaced 8 characters');
+    expect(formatToastTitle('en', 1)).toBe('Cleaned: 1 symbol');
+    expect(formatToastTitle('en', 8)).toBe('Cleaned: 8 symbols');
   });
 
   it('falls back to English for unsupported toast keys in other locales', () => {
-    expect(formatToastTitle('fr', 1)).toBe('Copied cleaned: replaced 1 character');
+    expect(formatToastTitle('fr', 1)).toBe('Cleaned: 1 symbol');
   });
 });
 
 describe('formatToastBreakdown', () => {
-  it('lists only non-zero groups in a fixed order', () => {
-    const stats = statsWith({ quotes: 2, dashes: 1, ellipsis: 1, spaces: 1 });
-    expect(formatToastBreakdown('ru', stats)).toBe('2 кавычки, 1 тире, 1 многоточие, 1 спецпробел');
+  it('lists non-zero groups sorted by count descending', () => {
+    const stats = statsWith({ quotes: 1, dashes: 3, ellipsis: 1 });
+    expect(formatToastBreakdown('ru', stats)).toBe('3 тире, 1 кавычка, 1 многоточие');
+  });
+
+  it('keeps declaration order as a tie-breaker when counts are equal', () => {
+    const stats = statsWith({ dashes: 2, quotes: 2 });
+    expect(formatToastBreakdown('ru', stats)).toBe('2 кавычки, 2 тире');
   });
 
   it('returns an empty string when nothing was replaced', () => {
     expect(formatToastBreakdown('ru', createEmptyStats())).toBe('');
   });
 
-  it('pluralizes each group independently', () => {
-    const stats = statsWith({ quotes: 5, invisibles: 2, other: 1 });
-    expect(formatToastBreakdown('ru', stats)).toBe(
-      '5 кавычек, 2 невидимых символа, 1 прочий символ',
-    );
+  it('pluralizes each group independently, including the new minus/arrows/bullets/symbols groups', () => {
+    const stats = statsWith({ quotes: 5, invisibles: 2, minus: 1 });
+    expect(formatToastBreakdown('ru', stats)).toBe('5 кавычек, 2 невидимых символа, 1 минус');
   });
 
-  it('formats English breakdown with singular/plural nouns', () => {
+  it('collapses groups beyond the top 3 into "и ещё N" (sum of the remaining counts)', () => {
+    const stats = statsWith({ quotes: 5, dashes: 4, ellipsis: 3, spaces: 2, invisibles: 1 });
+    expect(formatToastBreakdown('ru', stats)).toBe('5 кавычек, 4 тире, 3 многоточия, и ещё 3');
+  });
+
+  it('collapses the overflow in English as "and N more"', () => {
+    const stats = statsWith({ quotes: 5, dashes: 4, ellipsis: 3, spaces: 2, invisibles: 1 });
+    expect(formatToastBreakdown('en', stats)).toBe('5 quotes, 4 dashes, 3 ellipses, and 3 more');
+  });
+
+  it('formats English breakdown with singular/plural nouns, sorted by count', () => {
     const stats = statsWith({ quotes: 1, dashes: 2 });
-    expect(formatToastBreakdown('en', stats)).toBe('1 quote, 2 dashes');
+    expect(formatToastBreakdown('en', stats)).toBe('2 dashes, 1 quote');
+  });
+
+  it('formats English breakdown for the new groups, collapsing overflow past 3', () => {
+    const stats = statsWith({ minus: 1, arrows: 2, bullets: 3, symbols: 4 });
+    expect(formatToastBreakdown('en', stats)).toBe('4 signs, 3 bullets, 2 arrows, and 1 more');
   });
 });

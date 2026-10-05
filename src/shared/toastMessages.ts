@@ -8,7 +8,10 @@ type UnitBase =
   | 'toastUnitEllipsis'
   | 'toastUnitSpaces'
   | 'toastUnitInvisibles'
-  | 'toastUnitOther';
+  | 'toastUnitMinus'
+  | 'toastUnitArrows'
+  | 'toastUnitBullets'
+  | 'toastUnitSymbols';
 
 /**
  * Возвращает словоформу для числа n. Для русского — три формы (1 / 2-4 / 5+),
@@ -24,7 +27,7 @@ function unit(language: SupportedLanguage, base: UnitBase, n: number): string {
   return n === 1 ? forms[0] : forms[2];
 }
 
-/** "Скопировано очищенным: заменено 8 символов" / "Copied cleaned: replaced 8 characters". */
+/** Короткий однострочный заголовок: "Очищено: 6 символов" / "Cleaned: 6 symbols". */
 export function formatToastTitle(language: SupportedLanguage, total: number): string {
   return getMessage(language, 'toastTitle', {
     count: String(total),
@@ -32,18 +35,42 @@ export function formatToastTitle(language: SupportedLanguage, total: number): st
   });
 }
 
+/** Порядок используется только как tie-breaker при равном count — сортировка по убыванию ниже первична. */
 const GROUP_ORDER: ReadonlyArray<{ key: keyof Stats['byGroup']; base: UnitBase }> = [
   { key: 'quotes', base: 'toastUnitQuotes' },
   { key: 'dashes', base: 'toastUnitDashes' },
   { key: 'ellipsis', base: 'toastUnitEllipsis' },
   { key: 'spaces', base: 'toastUnitSpaces' },
   { key: 'invisibles', base: 'toastUnitInvisibles' },
-  { key: 'other', base: 'toastUnitOther' },
+  { key: 'minus', base: 'toastUnitMinus' },
+  { key: 'arrows', base: 'toastUnitArrows' },
+  { key: 'bullets', base: 'toastUnitBullets' },
+  { key: 'symbols', base: 'toastUnitSymbols' },
 ];
 
-/** "2 кавычки, 1 тире, 1 многоточие, 1 спецпробел" — только ненулевые группы. */
+/** Не более стольких групп выводится явно; остальное сворачивается в "и ещё N". */
+const MAX_VISIBLE_GROUPS = 3;
+
+/**
+ * "3 тире, 2 кавычки, 1 минус" — только ненулевые группы, отсортированные по убыванию count.
+ * Если групп больше MAX_VISIBLE_GROUPS, остаток схлопывается в "и ещё N" (сумма их count).
+ */
 export function formatToastBreakdown(language: SupportedLanguage, stats: Stats): string {
-  return GROUP_ORDER.filter(({ key }) => stats.byGroup[key] > 0)
-    .map(({ key, base }) => `${stats.byGroup[key]} ${unit(language, base, stats.byGroup[key])}`)
-    .join(', ');
+  const nonZero = GROUP_ORDER.filter(({ key }) => stats.byGroup[key] > 0).sort(
+    (a, b) => stats.byGroup[b.key] - stats.byGroup[a.key],
+  );
+
+  const visible = nonZero.slice(0, MAX_VISIBLE_GROUPS);
+  const rest = nonZero.slice(MAX_VISIBLE_GROUPS);
+
+  const parts = visible.map(
+    ({ key, base }) => `${stats.byGroup[key]} ${unit(language, base, stats.byGroup[key])}`,
+  );
+
+  if (rest.length > 0) {
+    const restTotal = rest.reduce((sum, { key }) => sum + stats.byGroup[key], 0);
+    parts.push(getMessage(language, 'toastAndMore', { count: String(restTotal) }));
+  }
+
+  return parts.join(', ');
 }

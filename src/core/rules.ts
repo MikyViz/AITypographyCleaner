@@ -72,18 +72,36 @@ export function removeInvisibles(text: string, onReplace?: OnReplace): string {
   });
 }
 
-/** × заменяется на x только когда вплотную примыкает к букве/цифре с обеих сторон (не в формулах с пробелами). */
-const MULTIPLICATION_TIGHT = /(?<=[\p{L}\p{N}])\u00D7(?=[\p{L}\p{N}])/gu;
+/** Минус (U+2212) и неразрывный дефис (U+2011) → "-". */
+export function replaceMinus(text: string, onReplace?: OnReplace): string {
+  return text.replace(/[\u2212\u2011]/g, (match) => { onReplace?.(match); return '-'; });
+}
 
-export function replaceMisc(text: string, onReplace?: OnReplace): string {
+/** → и ← → "->" и "<-". */
+export function replaceArrows(text: string, onReplace?: OnReplace): string {
   return text
-    .replace(/[\u2212\u2011]/g, (match) => { onReplace?.(match); return '-'; }) // минус (U+2212), неразрывный дефис (U+2011)
-    .replace(/\u2022/g, (match) => { onReplace?.(match); return '-'; }) // буллет •
-    .replace(/\u2192/g, (match) => { onReplace?.(match); return '->'; }) // →
-    .replace(/\u2190/g, (match) => { onReplace?.(match); return '<-'; }) // ←
-    .replace(MULTIPLICATION_TIGHT, (match) => { onReplace?.(match); return 'x'; }) // ×
-    .replace(/\u2032/g, (match) => { onReplace?.(match); return "'"; }) // прайм ′
-    .replace(/\u2033/g, (match) => { onReplace?.(match); return '"'; }); // двойной прайм ″
+    .replace(/\u2192/g, (match) => { onReplace?.(match); return '->'; })
+    .replace(/\u2190/g, (match) => { onReplace?.(match); return '<-'; });
+}
+
+/** Буллет • → "-". */
+export function replaceBullets(text: string, onReplace?: OnReplace): string {
+  return text.replace(/\u2022/g, (match) => { onReplace?.(match); return '-'; });
+}
+
+/**
+ * × заменяется на x только между двумя цифрами (1920×1080) или между двумя буквами
+ * (Width×Height) — то есть обе стороны одной категории. Смешанные случаи (цифра/буква)
+ * и случаи с пробелами (формулы вида "2 × 2") не трогаются, чтобы не ломать математику.
+ */
+const MULTIPLICATION_TIGHT = /(?<=\p{N})\u00D7(?=\p{N})|(?<=\p{L})\u00D7(?=\p{L})/gu;
+
+/** ×, прайм ′ и двойной прайм ″ — разные мелкие символы-«прочее». */
+export function replaceSymbols(text: string, onReplace?: OnReplace): string {
+  return text
+    .replace(MULTIPLICATION_TIGHT, (match) => { onReplace?.(match); return 'x'; })
+    .replace(/\u2032/g, (match) => { onReplace?.(match); return "'"; })
+    .replace(/\u2033/g, (match) => { onReplace?.(match); return '"'; });
 }
 
 /**

@@ -7,10 +7,27 @@ const AUTO_HIDE_MS = 2500;
 const TRANSITION_MS = 150;
 
 const TOAST_CSS = `
-  :host { all: initial; }
+  :host {
+    all: initial;
+    /*
+     * Всё позиционирование хоста — здесь, а не инлайн-стилями из JS: инлайн-стиль всегда
+     * побеждает над правилами из <style>, поэтому position/right/bottom обязаны жить в
+     * одном месте (иначе inline "all: initial" из JS молча затирает offset-ы ниже).
+     */
+    position: fixed;
+    z-index: 2147483647;
+    pointer-events: none;
+    /* Позиция и ширина тоста — всё настраивается здесь, через переменные. */
+    --toast-offset-right: 16px;
+    --toast-offset-bottom: 80px;
+    --toast-offset-left: 16px;
+    --toast-max-width: min(360px, calc(100vw - 32px));
+    right: var(--toast-offset-right);
+    bottom: var(--toast-offset-bottom);
+  }
   .toast {
     box-sizing: border-box;
-    max-width: 320px;
+    max-width: var(--toast-max-width);
     padding: 10px 14px;
     border-radius: 10px;
     font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -28,11 +45,17 @@ const TOAST_CSS = `
   }
   .toast-title {
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .toast-breakdown {
     margin-top: 2px;
     font-size: 11px;
     opacity: 0.75;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .toast-breakdown:empty {
     display: none;
@@ -47,6 +70,16 @@ const TOAST_CSS = `
   @media (prefers-reduced-motion: reduce) {
     .toast {
       transition: none;
+    }
+  }
+  /* Узкие экраны: тост растягивается на всю ширину за вычетом боковых отступов. */
+  @media (max-width: 480px) {
+    :host {
+      left: var(--toast-offset-left);
+      right: var(--toast-offset-right);
+    }
+    .toast {
+      max-width: none;
     }
   }
 `;
@@ -66,11 +99,8 @@ function ensureToast(): ToastRefs {
 
   const host = document.createElement('div');
   host.id = HOST_ID;
-  host.style.all = 'initial';
-  host.style.position = 'fixed';
-  host.style.inset = 'auto 16px 16px auto';
-  host.style.zIndex = '2147483647';
-  host.style.pointerEvents = 'none';
+  // Весь reset и позиционирование хоста заданы правилом :host в TOAST_CSS — инлайн-стили
+  // сюда намеренно не добавляются, чтобы не перебивать CSS-переменные из Shadow DOM.
 
   const shadow = host.attachShadow({ mode: 'closed' });
 
@@ -116,7 +146,17 @@ export function showCopyToast(stats: Stats, settings: ToastSettings, language: L
     const { box, title, breakdown } = ensureToast();
 
     title.textContent = formatToastTitle(activeLanguage, stats.total);
-    breakdown.textContent = settings.showBreakdown ? formatToastBreakdown(activeLanguage, stats) : '';
+
+    // Разбивка необязательна: если подсчёт/форматирование упадёт, тост всё равно
+    // показывает заголовок — копирование в любом случае не должно страдать.
+    breakdown.textContent = '';
+    if (settings.showBreakdown) {
+      try {
+        breakdown.textContent = formatToastBreakdown(activeLanguage, stats);
+      } catch {
+        // Молча оставляем разбивку пустой.
+      }
+    }
 
     box.classList.add('visible');
 

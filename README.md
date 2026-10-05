@@ -13,6 +13,8 @@ src/core/normalize.ts   — normalize(text, opts): чистая функция �
 src/shared/settings.ts  — чтение/запись browser.storage.sync, whitelist-хелперы
 src/shared/theme.ts     — тип Theme и applyTheme() — форсирует data-theme на <html> для Light/Dark
 _locales/               — переводы интерфейса WebExtension (по языку браузера; английский — fallback)
+src/assets/48.jpg       — иконка расширения 48 × 48
+src/assets/128.jpg      — иконка расширения 128 × 128
 src/shared/messages.ts  — типы сообщений content ⇄ background
 src/content.ts          — перехват copy/paste на whitelist-сайтах + обработчик контекстного меню
 src/background.ts       — фоновый скрипт: контекстное меню, permissions, регистрация content script
@@ -39,7 +41,8 @@ npm test               # vitest — тесты ядра normalize()
 npm run typecheck      # tsc --noEmit
 ```
 
-Единственное отличие между таргетами — ключ `background` в манифесте
+Сборщик копирует иконки в `icons/` внутри каждой папки сборки. Единственное отличие
+между таргетами — ключ `background` в манифесте
 (`service_worker` для Chrome MV3 vs `scripts` для Firefox, который до сих пор не запускает
 фон как настоящий Service Worker). Весь остальной код и permissions идентичны.
 
