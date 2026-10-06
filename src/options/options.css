@@ -229,3 +229,13 @@ ul#whitelist li button:hover {
 .status.error {
   color: var(--danger);
 }
+
+.page-footer {
+  font-size: 13px;
+  text-align: center;
+}
+
+.page-footer a,
+.page-footer a:visited {
+  color: var(--accent);
+}

@@ -40,6 +40,8 @@ async function copyStatic() {
   await cp('src/popup/popup.css', path.join(outdir, 'popup/popup.css'));
   await cp('src/options/options.html', path.join(outdir, 'options/options.html'));
   await cp('src/options/options.css', path.join(outdir, 'options/options.css'));
+  await cp('src/options/privacy-policy.html', path.join(outdir, 'options/privacy-policy.html'));
+  await cp('src/options/privacy-policy.css', path.join(outdir, 'options/privacy-policy.css'));
 }
 
 await rm(outdir, { recursive: true, force: true });

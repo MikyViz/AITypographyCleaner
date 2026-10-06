@@ -16,9 +16,9 @@
     "scripting"
   ],
   "host_permissions": [
-    "*://chatgpt.com/*",
-    "*://claude.ai/*",
-    "*://gemini.google.com/*"
+    "https://chatgpt.com/*",
+    "https://claude.ai/*",
+    "https://gemini.google.com/*"
   ],
   "optional_host_permissions": [
     "*://*/*"
@@ -31,9 +31,9 @@
   "content_scripts": [
     {
       "matches": [
-        "*://chatgpt.com/*",
-        "*://claude.ai/*",
-        "*://gemini.google.com/*"
+        "https://chatgpt.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*"
       ],
       "js": [
         "content.js"

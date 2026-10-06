@@ -20,6 +20,7 @@ src/content.ts          — перехват copy/paste на whitelist-сайт�
 src/background.ts       — фоновый скрипт: контекстное меню, permissions, регистрация content script
 src/popup/              — popup с textarea "вставил → очистил → скопировал"
 src/options/            — страница настроек (чекбоксы правил + whitelist доменов)
+src/options/privacy-policy.html — политика конфиденциальности (русский и английский)
 tests/normalize.test.ts — vitest, минимум 1 кейс на каждое правило
 scripts/build.mjs       — esbuild-бандлер, собирает под --target=chrome|firefox
 ```
@@ -88,6 +89,8 @@ npm run typecheck      # tsc --noEmit
   (добавление домена запрашивает `browser.permissions.request` только на этот конкретный домен
   через `optional_host_permissions`, без запроса доступа ко всем сайтам сразу). Настройки хранятся
   в `browser.storage.sync`.
+- **Политика конфиденциальности.** Доступна со страницы настроек; описывает локальную обработку
+  текста и синхронизацию пользовательских настроек встроенными средствами браузера.
 - **Тема оформления.** Селектор "Системная / Светлая / Тёмная" в настройках ([src/shared/theme.ts](src/shared/theme.ts)).
   "Системная" отдаёт управление CSS `prefers-color-scheme`; "Светлая"/"Тёмная" проставляют
   `data-theme` на `<html>` и форсируют тему независимо от ОС/браузера — это нужно, например,
