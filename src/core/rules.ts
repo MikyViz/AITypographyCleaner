@@ -4,7 +4,11 @@
  */
 
 export type DashMode = ' - ' | '-' | ', ';
-type OnReplace = (removed: string) => void;
+/** Сообщает, сколько "единиц" данной группы было заменено одним совпадением (обычно 1, но для
+ * схлопывания пробелов — сразу несколько). Нельзя считать по длине строки совпадения: некоторые
+ * совпадения (эмодзи-последовательности) физически состоят из нескольких code point-ов, но
+ * визуально и по смыслу являются ОДНИМ символом. */
+type OnReplace = (count: number) => void;
 
 /** Кавычки-«ёлочки», немецкие „ “, английские “ ” и угловые « » → прямая ". */
 const DOUBLE_QUOTES = /[\u201C\u201D\u201E\u00AB\u00BB]/g;
@@ -14,11 +18,11 @@ const SINGLE_QUOTES = /[\u2018\u2019\u201A\u2039\u203A]/g;
 export function replaceQuotes(text: string, onReplace?: OnReplace): string {
   return text
     .replace(DOUBLE_QUOTES, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return '"';
     })
     .replace(SINGLE_QUOTES, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "'";
     });
 }
@@ -35,7 +39,7 @@ export function replaceDashes(text: string, mode: DashMode, onReplace?: OnReplac
     const after = text.slice(offset + match.length).match(/^\s*(\S)/)?.[1] ?? '';
     const isDigitRange = /\d/.test(before) && /\d/.test(after);
     for (const character of match) {
-      if (character === '\u2013' || character === '\u2014') onReplace?.(character);
+      if (character === '\u2013' || character === '\u2014') onReplace?.(1);
     }
     return isDigitRange ? '-' : mode;
   });
@@ -43,7 +47,7 @@ export function replaceDashes(text: string, mode: DashMode, onReplace?: OnReplac
 
 export function replaceEllipsis(text: string, onReplace?: OnReplace): string {
   return text.replace(/\u2026/g, (match) => {
-    onReplace?.(match);
+    onReplace?.(1);
     return '...';
   });
 }
@@ -53,7 +57,7 @@ const SPECIAL_SPACES = /[\u00A0\u2002-\u200A\u202F\u205F\u3000]/g;
 
 export function replaceSpecialSpaces(text: string, onReplace?: OnReplace): string {
   return text.replace(SPECIAL_SPACES, (match) => {
-    onReplace?.(match);
+    onReplace?.(1);
     return ' ';
   });
 }
@@ -67,26 +71,26 @@ const INVISIBLES = /[\u200B\u2060\uFEFF\u00AD\u200E\u200F]/g;
 
 export function removeInvisibles(text: string, onReplace?: OnReplace): string {
   return text.replace(INVISIBLES, (match) => {
-    onReplace?.(match);
+    onReplace?.(1);
     return '';
   });
 }
 
 /** Минус (U+2212) и неразрывный дефис (U+2011) → "-". */
 export function replaceMinus(text: string, onReplace?: OnReplace): string {
-  return text.replace(/[\u2212\u2011]/g, (match) => { onReplace?.(match); return '-'; });
+  return text.replace(/[\u2212\u2011]/g, (match) => { onReplace?.(1); return '-'; });
 }
 
 /** → и ← → "->" и "<-". */
 export function replaceArrows(text: string, onReplace?: OnReplace): string {
   return text
-    .replace(/\u2192/g, (match) => { onReplace?.(match); return '->'; })
-    .replace(/\u2190/g, (match) => { onReplace?.(match); return '<-'; });
+    .replace(/\u2192/g, (match) => { onReplace?.(1); return '->'; })
+    .replace(/\u2190/g, (match) => { onReplace?.(1); return '<-'; });
 }
 
 /** Буллет • → "-". */
 export function replaceBullets(text: string, onReplace?: OnReplace): string {
-  return text.replace(/\u2022/g, (match) => { onReplace?.(match); return '-'; });
+  return text.replace(/\u2022/g, (match) => { onReplace?.(1); return '-'; });
 }
 
 /**
@@ -99,9 +103,9 @@ const MULTIPLICATION_TIGHT = /(?<=\p{N})\u00D7(?=\p{N})|(?<=\p{L})\u00D7(?=\p{L}
 /** ×, прайм ′ и двойной прайм ″ — разные мелкие символы-«прочее». */
 export function replaceSymbols(text: string, onReplace?: OnReplace): string {
   return text
-    .replace(MULTIPLICATION_TIGHT, (match) => { onReplace?.(match); return 'x'; })
-    .replace(/\u2032/g, (match) => { onReplace?.(match); return "'"; })
-    .replace(/\u2033/g, (match) => { onReplace?.(match); return '"'; });
+    .replace(MULTIPLICATION_TIGHT, (match) => { onReplace?.(1); return 'x'; })
+    .replace(/\u2032/g, (match) => { onReplace?.(1); return "'"; })
+    .replace(/\u2033/g, (match) => { onReplace?.(1); return '"'; });
 }
 
 /**
@@ -115,7 +119,9 @@ const EMOJI =
 
 export function removeEmojis(text: string, onReplace?: OnReplace): string {
   return text.replace(EMOJI, (match) => {
-    onReplace?.(match);
+    // Один match — один видимый эмодзи, даже если внутри несколько code point-ов
+    // (ZWJ-цепочки вроде 🧑‍🎤, модификаторы тона кожи, флаги, keycap-последовательности).
+    onReplace?.(1);
     return '';
   });
 }
@@ -135,7 +141,7 @@ export function collapseSpaces(text: string, onReplace?: OnReplace): string {
       const indent = m?.[1] ?? '';
       const rest = m?.[2] ?? '';
       return indent + rest.replace(/ {2,}/g, (match) => {
-        onReplace?.(match.slice(1));
+        onReplace?.(match.length - 1);
         return ' ';
       });
     })

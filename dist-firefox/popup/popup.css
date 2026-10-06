@@ -169,6 +169,30 @@ button.secondary:hover:not(:disabled) {
   font-size: 12px;
 }
 
+.counter {
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  background: var(--field-bg);
+  border: 1px solid var(--border);
+}
+
+.counter-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.counter-breakdown {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.counter-breakdown:empty {
+  display: none;
+}
+
 a {
   align-self: flex-start;
   font-size: 12px;

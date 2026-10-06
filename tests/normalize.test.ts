@@ -171,6 +171,41 @@ describe('emojis', () => {
   });
 });
 
+describe('emoji statistics (regression: multi-codepoint sequences must count as one symbol)', () => {
+  it('counts a simple single-codepoint emoji as 1', () => {
+    expect(normalizeWithStats('Hello 😀', opts({ emojis: true })).stats.byGroup.symbols).toBe(1);
+  });
+
+  it('counts an emoji with a skin-tone modifier as 1, not 2', () => {
+    expect(normalizeWithStats('👍🏽', opts({ emojis: true })).stats.byGroup.symbols).toBe(1);
+  });
+
+  it('counts a ZWJ sequence (e.g. singer 🧑\u200D🎤, 3 code points) as 1, not 3', () => {
+    const singer = '\u{1F9D1}\u200D\u{1F3A4}';
+    expect(normalizeWithStats(singer, opts({ emojis: true })).stats.byGroup.symbols).toBe(1);
+  });
+
+  it('counts a multi-person ZWJ family sequence (4 pictographs + 3 ZWJ) as 1, not 7', () => {
+    const family = '\u{1F468}\u200D\u{1F469}\u200D\u{1F467}\u200D\u{1F466}';
+    expect(normalizeWithStats(family, opts({ emojis: true })).stats.byGroup.symbols).toBe(1);
+  });
+
+  it('counts a flag sequence (2 regional indicators) as 1, not 2', () => {
+    expect(normalizeWithStats('\u{1F1FA}\u{1F1F8}', opts({ emojis: true })).stats.byGroup.symbols).toBe(1);
+  });
+
+  it('counts a keycap sequence (digit + variation selector + combining enclosing keycap) as 1, not 3', () => {
+    expect(normalizeWithStats('3\uFE0F\u20E3', opts({ emojis: true })).stats.byGroup.symbols).toBe(1);
+  });
+
+  it('counts 5 mixed emoji (including one ZWJ sequence) as exactly 5, matching the toast counter', () => {
+    const text = '\u{1F923}\u{1F921}\u{1F920}\u{1F977}\u{1F9D1}\u200D\u{1F3A4}';
+    const stats = normalizeWithStats(text, opts({ emojis: true })).stats;
+    expect(stats.byGroup.symbols).toBe(5);
+    expect(stats.total).toBe(5);
+  });
+});
+
 describe('collapseSpaces', () => {
   it('collapses doubled spaces created by replacements', () => {
     expect(normalize('foo\u00A0 bar', opts())).toBe('foo bar');

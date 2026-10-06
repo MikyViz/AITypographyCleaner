@@ -94,11 +94,9 @@ export function mergeStats(a: Stats, b: Stats): Stats {
  */
 export function normalize(text: string, opts: Options = defaultOptions): { text: string; stats: Stats } {
   const stats = createEmptyStats();
-  const count = (group: keyof Stats['byGroup']) => (removed: string): void => {
-    for (const _character of removed) {
-      stats.byGroup[group] += 1;
-      stats.total += 1;
-    }
+  const count = (group: keyof Stats['byGroup']) => (n: number): void => {
+    stats.byGroup[group] += n;
+    stats.total += n;
   };
 
   const segments = splitProtectedSegments(text);

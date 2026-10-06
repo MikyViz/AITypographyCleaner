@@ -1024,10 +1024,10 @@
   var SINGLE_QUOTES = /[\u2018\u2019\u201A\u2039\u203A]/g;
   function replaceQuotes(text, onReplace) {
     return text.replace(DOUBLE_QUOTES, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return '"';
     }).replace(SINGLE_QUOTES, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "'";
     });
   }
@@ -1038,69 +1038,69 @@
       const after = text.slice(offset + match.length).match(/^\s*(\S)/)?.[1] ?? "";
       const isDigitRange = /\d/.test(before) && /\d/.test(after);
       for (const character of match) {
-        if (character === "\u2013" || character === "\u2014") onReplace?.(character);
+        if (character === "\u2013" || character === "\u2014") onReplace?.(1);
       }
       return isDigitRange ? "-" : mode;
     });
   }
   function replaceEllipsis(text, onReplace) {
     return text.replace(/\u2026/g, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "...";
     });
   }
   var SPECIAL_SPACES = /[\u00A0\u2002-\u200A\u202F\u205F\u3000]/g;
   function replaceSpecialSpaces(text, onReplace) {
     return text.replace(SPECIAL_SPACES, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return " ";
     });
   }
   var INVISIBLES = /[\u200B\u2060\uFEFF\u00AD\u200E\u200F]/g;
   function removeInvisibles(text, onReplace) {
     return text.replace(INVISIBLES, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "";
     });
   }
   function replaceMinus(text, onReplace) {
     return text.replace(/[\u2212\u2011]/g, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "-";
     });
   }
   function replaceArrows(text, onReplace) {
     return text.replace(/\u2192/g, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "->";
     }).replace(/\u2190/g, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "<-";
     });
   }
   function replaceBullets(text, onReplace) {
     return text.replace(/\u2022/g, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "-";
     });
   }
   var MULTIPLICATION_TIGHT = new RegExp("(?<=\\p{N})\\u00D7(?=\\p{N})|(?<=\\p{L})\\u00D7(?=\\p{L})", "gu");
   function replaceSymbols(text, onReplace) {
     return text.replace(MULTIPLICATION_TIGHT, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "x";
     }).replace(/\u2032/g, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "'";
     }).replace(/\u2033/g, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return '"';
     });
   }
   var EMOJI = new RegExp("\\p{Extended_Pictographic}(?:[\\u{1F3FB}-\\u{1F3FF}]|\\uFE0F|\\u200D\\p{Extended_Pictographic})*|[\\u{1F1E6}-\\u{1F1FF}]{2}|[0-9#*]\\uFE0F?\\u20E3", "gu");
   function removeEmojis(text, onReplace) {
     return text.replace(EMOJI, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "";
     });
   }
@@ -1112,7 +1112,7 @@
       const indent = m?.[1] ?? "";
       const rest = m?.[2] ?? "";
       return indent + rest.replace(/ {2,}/g, (match) => {
-        onReplace?.(match.slice(1));
+        onReplace?.(match.length - 1);
         return " ";
       });
     }).join("");
@@ -1181,11 +1181,9 @@
   }
   function normalize(text, opts = defaultOptions) {
     const stats = createEmptyStats();
-    const count = (group) => (removed) => {
-      for (const _character of removed) {
-        stats.byGroup[group] += 1;
-        stats.total += 1;
-      }
+    const count = (group) => (n) => {
+      stats.byGroup[group] += n;
+      stats.total += n;
     };
     const segments = splitProtectedSegments(text);
     const processed = segments.map((segment) => {

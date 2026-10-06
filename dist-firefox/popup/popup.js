@@ -1024,10 +1024,10 @@
   var SINGLE_QUOTES = /[\u2018\u2019\u201A\u2039\u203A]/g;
   function replaceQuotes(text, onReplace) {
     return text.replace(DOUBLE_QUOTES, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return '"';
     }).replace(SINGLE_QUOTES, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "'";
     });
   }
@@ -1038,69 +1038,69 @@
       const after = text.slice(offset + match.length).match(/^\s*(\S)/)?.[1] ?? "";
       const isDigitRange = /\d/.test(before) && /\d/.test(after);
       for (const character of match) {
-        if (character === "\u2013" || character === "\u2014") onReplace?.(character);
+        if (character === "\u2013" || character === "\u2014") onReplace?.(1);
       }
       return isDigitRange ? "-" : mode;
     });
   }
   function replaceEllipsis(text, onReplace) {
     return text.replace(/\u2026/g, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "...";
     });
   }
   var SPECIAL_SPACES = /[\u00A0\u2002-\u200A\u202F\u205F\u3000]/g;
   function replaceSpecialSpaces(text, onReplace) {
     return text.replace(SPECIAL_SPACES, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return " ";
     });
   }
   var INVISIBLES = /[\u200B\u2060\uFEFF\u00AD\u200E\u200F]/g;
   function removeInvisibles(text, onReplace) {
     return text.replace(INVISIBLES, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "";
     });
   }
   function replaceMinus(text, onReplace) {
     return text.replace(/[\u2212\u2011]/g, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "-";
     });
   }
   function replaceArrows(text, onReplace) {
     return text.replace(/\u2192/g, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "->";
     }).replace(/\u2190/g, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "<-";
     });
   }
   function replaceBullets(text, onReplace) {
     return text.replace(/\u2022/g, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "-";
     });
   }
   var MULTIPLICATION_TIGHT = new RegExp("(?<=\\p{N})\\u00D7(?=\\p{N})|(?<=\\p{L})\\u00D7(?=\\p{L})", "gu");
   function replaceSymbols(text, onReplace) {
     return text.replace(MULTIPLICATION_TIGHT, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "x";
     }).replace(/\u2032/g, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "'";
     }).replace(/\u2033/g, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return '"';
     });
   }
   var EMOJI = new RegExp("\\p{Extended_Pictographic}(?:[\\u{1F3FB}-\\u{1F3FF}]|\\uFE0F|\\u200D\\p{Extended_Pictographic})*|[\\u{1F1E6}-\\u{1F1FF}]{2}|[0-9#*]\\uFE0F?\\u20E3", "gu");
   function removeEmojis(text, onReplace) {
     return text.replace(EMOJI, (match) => {
-      onReplace?.(match);
+      onReplace?.(1);
       return "";
     });
   }
@@ -1112,7 +1112,7 @@
       const indent = m?.[1] ?? "";
       const rest = m?.[2] ?? "";
       return indent + rest.replace(/ {2,}/g, (match) => {
-        onReplace?.(match.slice(1));
+        onReplace?.(match.length - 1);
         return " ";
       });
     }).join("");
@@ -1165,11 +1165,9 @@
   }
   function normalize(text, opts = defaultOptions) {
     const stats = createEmptyStats();
-    const count = (group) => (removed) => {
-      for (const _character of removed) {
-        stats.byGroup[group] += 1;
-        stats.total += 1;
-      }
+    const count = (group) => (n) => {
+      stats.byGroup[group] += n;
+      stats.total += n;
     };
     const segments = splitProtectedSegments(text);
     const processed = segments.map((segment) => {
@@ -2079,6 +2077,14 @@
     if (!substitutions) return raw;
     return raw.replace(/\{(\w+)\}/g, (match, token) => substitutions[token] ?? match);
   }
+  function plural(n, forms) {
+    const mod10 = n % 10;
+    const mod100 = n % 100;
+    if (mod100 >= 11 && mod100 <= 14) return forms[2];
+    if (mod10 === 1) return forms[0];
+    if (mod10 >= 2 && mod10 <= 4) return forms[1];
+    return forms[2];
+  }
   function localizeDocument(language) {
     document.documentElement.lang = language.replace("_", "-");
     document.documentElement.dir = language === "he" ? "rtl" : "ltr";
@@ -2129,6 +2135,50 @@
     };
   }
 
+  // src/shared/toastMessages.ts
+  function unit(language, base, n) {
+    const forms = [
+      getMessage(language, `${base}One`),
+      getMessage(language, `${base}Few`),
+      getMessage(language, `${base}Many`)
+    ];
+    if (language === "ru") return plural(n, forms);
+    return n === 1 ? forms[0] : forms[2];
+  }
+  function formatToastTitle(language, total) {
+    return getMessage(language, "toastTitle", {
+      count: String(total),
+      unit: unit(language, "toastUnitCharacter", total)
+    });
+  }
+  var GROUP_ORDER = [
+    { key: "quotes", base: "toastUnitQuotes" },
+    { key: "dashes", base: "toastUnitDashes" },
+    { key: "ellipsis", base: "toastUnitEllipsis" },
+    { key: "spaces", base: "toastUnitSpaces" },
+    { key: "invisibles", base: "toastUnitInvisibles" },
+    { key: "minus", base: "toastUnitMinus" },
+    { key: "arrows", base: "toastUnitArrows" },
+    { key: "bullets", base: "toastUnitBullets" },
+    { key: "symbols", base: "toastUnitSymbols" }
+  ];
+  var MAX_VISIBLE_GROUPS = 3;
+  function formatToastBreakdown(language, stats) {
+    const nonZero = GROUP_ORDER.filter(({ key }) => stats.byGroup[key] > 0).sort(
+      (a, b) => stats.byGroup[b.key] - stats.byGroup[a.key]
+    );
+    const visible = nonZero.slice(0, MAX_VISIBLE_GROUPS);
+    const rest = nonZero.slice(MAX_VISIBLE_GROUPS);
+    const parts = visible.map(
+      ({ key, base }) => `${stats.byGroup[key]} ${unit(language, base, stats.byGroup[key])}`
+    );
+    if (rest.length > 0) {
+      const restTotal = rest.reduce((sum, { key }) => sum + stats.byGroup[key], 0);
+      parts.push(getMessage(language, "toastAndMore", { count: String(restTotal) }));
+    }
+    return parts.join(", ");
+  }
+
   // src/popup/popup.ts
   var activeLanguage = resolveLanguage("auto");
   localizeDocument(activeLanguage);
@@ -2138,6 +2188,9 @@
   var copyButton = document.getElementById("copy");
   var status = document.getElementById("status");
   var openOptions = document.getElementById("open-options");
+  var counter = document.getElementById("counter");
+  var counterTitle = document.getElementById("counter-title");
+  var counterBreakdown = document.getElementById("counter-breakdown");
   void getSettings().then((settings) => {
     applyTheme(settings.theme);
     activeLanguage = resolveLanguage(settings.language);
@@ -2149,9 +2202,11 @@
   });
   cleanButton.addEventListener("click", async () => {
     const settings = await getSettings();
-    output.value = normalize(input.value, settings.options).text;
+    const result = normalize(input.value, settings.options);
+    output.value = result.text;
     copyButton.disabled = output.value.length === 0;
     status.textContent = "";
+    updateCounter(result.stats, settings.showBreakdown);
   });
   copyButton.addEventListener("click", async () => {
     await navigator.clipboard.writeText(output.value);
@@ -2160,5 +2215,20 @@
       status.textContent = "";
     }, 1500);
   });
+  function updateCounter(stats, showBreakdown) {
+    try {
+      if (stats.total <= 0) {
+        counter.hidden = true;
+        counterTitle.textContent = "";
+        counterBreakdown.textContent = "";
+        return;
+      }
+      counterTitle.textContent = formatToastTitle(activeLanguage, stats.total);
+      counterBreakdown.textContent = showBreakdown ? formatToastBreakdown(activeLanguage, stats) : "";
+      counter.hidden = false;
+    } catch {
+      counter.hidden = true;
+    }
+  }
 })();
 //# sourceMappingURL=popup.js.map

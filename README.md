@@ -13,8 +13,8 @@ src/core/normalize.ts   — normalize(text, opts): чистая функция �
 src/shared/settings.ts  — чтение/запись browser.storage.sync, whitelist-хелперы
 src/shared/theme.ts     — тип Theme и applyTheme() — форсирует data-theme на <html> для Light/Dark
 _locales/               — переводы интерфейса WebExtension (по языку браузера; английский — fallback)
-src/assets/48.jpg       — иконка расширения 48 × 48
-src/assets/128.jpg      — иконка расширения 128 × 128
+src/assets/48.png       — иконка расширения 48 × 48
+src/assets/128.png      — иконка расширения 128 × 128
 src/shared/messages.ts  — типы сообщений content ⇄ background
 src/content.ts          — перехват copy/paste на whitelist-сайтах + обработчик контекстного меню
 src/background.ts       — фоновый скрипт: контекстное меню, permissions, регистрация content script
